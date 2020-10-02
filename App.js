@@ -7,9 +7,13 @@
  */
 
 import React from 'react';
-import {Alert, Button, View, StatusBar} from 'react-native';
+import {Alert, Button, View, StyleSheet, StatusBar, Text} from 'react-native';
 
 const App: () => React$Node = () => {
+  function checkAccess() {
+    Alert.alert('test');
+  }
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -20,17 +24,21 @@ const App: () => React$Node = () => {
           alignItems: 'center',
           flexDirection: 'column',
         }}>
-        <View style={{width: 50, height: 50, backgroundColor: 'powderblue'}}>
-          <Button
-            title="Press me"
-            onPress={() => Alert.alert('Simple Button pressed')}
-          />
-        </View>
+        <Button onPress={() => checkAccess()} title="test" />
         <View style={{width: 50, height: 50, backgroundColor: 'skyblue'}} />
         <View style={{width: 50, height: 50, backgroundColor: 'steelblue'}} />
       </View>
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#00aeef',
+    borderColor: 'skyblue',
+    borderWidth: 5,
+    borderRadius: 15,
+  },
+});
 
 export default App;
