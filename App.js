@@ -24,7 +24,7 @@ const App: () => React$Node = () => {
           alignItems: 'center',
           flexDirection: 'column',
         }}>
-        <Button onPress={() => checkAccess()} title="test" />
+        <Button onPress={() => checkAccess()} title="Check Health Data Access" />
         <View style={{width: 50, height: 50, backgroundColor: 'skyblue'}} />
         <View style={{width: 50, height: 50, backgroundColor: 'steelblue'}} />
       </View>

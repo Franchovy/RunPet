@@ -16,6 +16,7 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* RunPetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* RunPetTests.m */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		9C99287925285D04007C9486 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C99287825285D04007C9486 /* HealthKit.framework */; };
 		BB40E58E2EF0B3BE82CE8513 /* libPods-RunPet-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 886BE29B3A1D1B1744CC1E0F /* libPods-RunPet-tvOSTests.a */; };
 		CE6DA3CE1A27C27F6F853DAA /* libPods-RunPet-RunPetTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DADB040A1A8386D179C4BE1D /* libPods-RunPet-RunPetTests.a */; };
 		CEF168021EB6470C410AED73 /* libPods-RunPet-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 753900E66BAB9A06156EB114 /* libPods-RunPet-tvOS.a */; };
@@ -61,6 +62,8 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = RunPet/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		886BE29B3A1D1B1744CC1E0F /* libPods-RunPet-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RunPet-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		91197CFFCAB7BA57A462BAAB /* Pods-RunPet-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunPet-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-RunPet-tvOSTests/Pods-RunPet-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
+		9C99287725285D04007C9486 /* RunPet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = RunPet.entitlements; path = RunPet/RunPet.entitlements; sourceTree = "<group>"; };
+		9C99287825285D04007C9486 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		A89C8D1DE3F6539978E237FD /* Pods-RunPet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunPet.debug.xcconfig"; path = "Target Support Files/Pods-RunPet/Pods-RunPet.debug.xcconfig"; sourceTree = "<group>"; };
 		DADB040A1A8386D179C4BE1D /* libPods-RunPet-RunPetTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RunPet-RunPetTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4DBD8A04DE586B581ABC583 /* Pods-RunPet-RunPetTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunPet-RunPetTests.debug.xcconfig"; path = "Target Support Files/Pods-RunPet-RunPetTests/Pods-RunPet-RunPetTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -83,6 +86,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DF1FDCCC1954AB9C13F01B0F /* libPods-RunPet.a in Frameworks */,
+				9C99287925285D04007C9486 /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +129,7 @@
 		13B07FAE1A68108700A75B9A /* RunPet */ = {
 			isa = PBXGroup;
 			children = (
+				9C99287725285D04007C9486 /* RunPet.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -139,6 +144,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9C99287825285D04007C9486 /* HealthKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
 				30FE5A13C25D9825FE6E2EF0 /* libPods-RunPet.a */,
@@ -194,7 +200,6 @@
 				91197CFFCAB7BA57A462BAAB /* Pods-RunPet-tvOSTests.debug.xcconfig */,
 				32078DD4AE4E8A6A99B0ED62 /* Pods-RunPet-tvOSTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -294,6 +299,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
+						DevelopmentTeam = Z9R45SX78W;
 						LastSwiftMigration = 1120;
 					};
 					2D02E47A1E0B4A5D006451C7 = {
@@ -655,9 +661,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = RunPet/RunPet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z9R45SX78W;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = RunPet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -678,8 +687,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = RunPet/RunPet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Z9R45SX78W;
 				INFOPLIST_FILE = RunPet/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
