@@ -1,8 +1,8 @@
 import React from 'react';
 import AppleHealthKit from 'rn-apple-healthkit';
-import {Button} from 'react-native';
+import {Alert, Button} from 'react-native';
 
-export class Main extends React.Component {
+export class HealthDataButton extends React.Component {
   constructor(props) {
     super(props);
 
@@ -21,14 +21,11 @@ export class Main extends React.Component {
     );
   }
 
+  sendAlert() {
+    Alert.alert('Alert!');
+  }
+
   render() {
-    return (
-      <>
-        <Button
-          title={'Check data access'}
-          onPress={alert('Has data: {}', this.hasHealthDataAccess)}
-        />
-      </>
-    );
+    return <Button title={'Check data access'} onPress={() => this.sendAlert()} />;
   }
 }

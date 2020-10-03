@@ -8,8 +8,14 @@
 
 import React from 'react';
 import {Alert, Button, View, StyleSheet, StatusBar, Text} from 'react-native';
+import {HealthDataButton} from './src/Body';
+//import HealthDataButton from './src/Body';
 
 const App: () => React$Node = () => {
+  function testFunction() {
+    Alert.alert('test function');
+  }
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -20,10 +26,7 @@ const App: () => React$Node = () => {
           alignItems: 'center',
           flexDirection: 'column',
         }}>
-        <Button
-          onPress={() => alert('test')}
-          title="Check Health Data Access"
-        />
+        <HealthDataButton/>
         <View style={{width: 50, height: 50, backgroundColor: 'skyblue'}} />
         <View style={{width: 50, height: 50, backgroundColor: 'steelblue'}} />
       </View>
