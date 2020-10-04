@@ -2,7 +2,13 @@ import React from 'react';
 import AppleHealthKit from 'rn-apple-healthkit';
 import {Alert, Button} from 'react-native';
 
-export class HealthDataButton extends React.Component {
+export class AccessButton extends React.Component {
+  state = {
+    accessButtonDisabled: false,
+    accessButtonText: 'Check Health Data Access',
+    hasHealthDataAccess: false,
+  };
+
   constructor(props) {
     super(props);
 
@@ -11,21 +17,50 @@ export class HealthDataButton extends React.Component {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
-    this.hasHealthDataAccess = AppleHealthKit.initHealthKit(
-      this.defaultHealthDataOptions,
-      (error, result) => {
-        if (error) {
-          alert('No data access!');
-        }
-      },
-    );
+
+    this.checkAccess = this.checkAccess.bind(this);
   }
 
-  sendAlert() {
-    Alert.alert('Alert!');
+  checkAccess = () => {
+    if (!this.state.hasHealthDataAccess) {
+      this.setState({
+        hasHealthDataAccess: AppleHealthKit.initHealthKit(
+          this.defaultHealthDataOptions,
+          (error, result) => {
+            if (error) {
+              alert('No data access!');
+              this.state.accessButtonText =
+                'Missing access - Please change settings';
+              return;
+            }
+            alert('Access granted');
+            this.setState({
+              accessButtonText: 'Access granted, Thank you.',
+              accessButtonDisabled: true,
+            });
+          },
+        ),
+      });
+    }
+  };
+
+  render() {
+    return (
+      <Button
+        title={this.state.accessButtonText}
+        onPress={this.checkAccess}
+        disabled={this.state.accessButtonDisabled}
+      />
+    );
+  }
+}
+
+export class SendDataButton extends React.Component {
+  testAlert() {
+    alert('alert!');
   }
 
   render() {
-    return <Button title={'Check data access'} onPress={() => this.sendAlert()} />;
+    return <Button title={'Update online data'} onPress={() => alert()} />;
   }
 }
