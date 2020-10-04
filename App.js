@@ -8,8 +8,10 @@
 
 import React from 'react';
 import {Alert, Button, View, StyleSheet, StatusBar, Text} from 'react-native';
-import {HealthDataButton} from './src/Body';
-//import HealthDataButton from './src/Body';
+import {HealthDataButton} from './src/HealthDataButton';
+import Amplify, {API, graphqlOperation} from 'aws-amplify';
+import awsconfig from './aws-exports';
+Amplify.configure(awsconfig);
 
 const App: () => React$Node = () => {
   function testFunction() {
@@ -26,7 +28,7 @@ const App: () => React$Node = () => {
           alignItems: 'center',
           flexDirection: 'column',
         }}>
-        <HealthDataButton/>
+        <HealthDataButton />
         <View style={{width: 50, height: 50, backgroundColor: 'skyblue'}} />
         <View style={{width: 50, height: 50, backgroundColor: 'steelblue'}} />
       </View>

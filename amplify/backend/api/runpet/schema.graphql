@@ -1,5 +1,121 @@
-type Todo @model {
-  id: ID!
-  name: String!
-  description: String
+﻿schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Data {
+  calories: Int
+  date: AWSDate
+  distance: Int
+  stepCount: Int
+  userid: ID!
+}
+
+type DataConnection {
+  items: [Data]
+  nextToken: String
+}
+
+type Mutation {
+  addData(calories: Int, date: AWSDate, distance: Int, stepCount: Int, userid: ID!): Data
+  createData(input: CreateDataInput!): Data
+  deleteData(input: DeleteDataInput!): Data
+  updateData(input: UpdateDataInput!): Data
+}
+
+type Query {
+  getData(date: AWSDate!, userid: ID!): Data
+  getData2(enddate: AWSDate, startdate: AWSDate, userid: ID!): [Data]
+  listData(filter: TableDataFilterInput, limit: Int, nextToken: String): DataConnection
+}
+
+type Subscription {
+  onCreateData(calories: Int, date: AWSDate, distance: Int, stepCount: Int, userid: ID): Data @aws_subscribe(mutations : ["createData"])
+  onDeleteData(calories: Int, date: AWSDate, distance: Int, stepCount: Int, userid: ID): Data @aws_subscribe(mutations : ["deleteData"])
+  onUpdateData(calories: Int, date: AWSDate, distance: Int, stepCount: Int, userid: ID): Data @aws_subscribe(mutations : ["updateData"])
+}
+
+input CreateDataInput {
+  calories: Int
+  date: AWSDate!
+  distance: Int
+  stepCount: Int
+  userid: ID!
+}
+
+input DeleteDataInput {
+  date: AWSDate!
+  userid: ID!
+}
+
+input TableBooleanFilterInput {
+  eq: Boolean
+  ne: Boolean
+}
+
+input TableDataFilterInput {
+  calories: TableIntFilterInput
+  date: TableStringFilterInput
+  distance: TableIntFilterInput
+  stepCount: TableIntFilterInput
+  userid: TableIDFilterInput
+}
+
+input TableFloatFilterInput {
+  between: [Float]
+  contains: Float
+  eq: Float
+  ge: Float
+  gt: Float
+  le: Float
+  lt: Float
+  ne: Float
+  notContains: Float
+}
+
+input TableIDFilterInput {
+  beginsWith: ID
+  between: [ID]
+  contains: ID
+  eq: ID
+  ge: ID
+  gt: ID
+  le: ID
+  lt: ID
+  ne: ID
+  notContains: ID
+}
+
+input TableIntFilterInput {
+  between: [Int]
+  contains: Int
+  eq: Int
+  ge: Int
+  gt: Int
+  le: Int
+  lt: Int
+  ne: Int
+  notContains: Int
+}
+
+input TableStringFilterInput {
+  beginsWith: String
+  between: [String]
+  contains: String
+  eq: String
+  ge: String
+  gt: String
+  le: String
+  lt: String
+  ne: String
+  notContains: String
+}
+
+input UpdateDataInput {
+  calories: Int
+  date: AWSDate!
+  distance: Int
+  stepCount: Int
+  userid: ID!
 }
