@@ -1,6 +1,6 @@
 import React from 'react';
 import AppleHealthKit from 'rn-apple-healthkit';
-import {Alert, Button} from 'react-native';
+import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 export class AccessButton extends React.Component {
   state = {
@@ -46,11 +46,26 @@ export class AccessButton extends React.Component {
 
   render() {
     return (
-      <Button
-        title={this.state.accessButtonText}
+      <TouchableOpacity
         onPress={this.checkAccess}
-        disabled={this.state.accessButtonDisabled}
-      />
+        disabled={this.state.accessButtonDisabled}>
+        <View
+          style={[
+            styles.button,
+            this.state.accessButtonDisabled
+              ? styles.buttonDisabled
+              : styles.buttonEnabled,
+          ]}>
+          <Text
+            style={
+              this.state.accessButtonDisabled
+                ? styles.buttonTextDisabled
+                : styles.buttonTextEnabled
+            }>
+            {this.state.accessButtonText}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   }
 }
@@ -64,3 +79,32 @@ export class SendDataButton extends React.Component {
     return <Button title={'Update online data'} onPress={() => alert()} />;
   }
 }
+
+const styles = StyleSheet.create({
+  button: {
+    width: 300,
+    height: 50,
+    marginBottom: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+  },
+  buttonEnabled: {
+    borderColor: 'grey',
+    backgroundColor: 'lightgrey',
+  },
+  buttonDisabled: {
+    borderColor: 'lightgrey',
+    backgroundColor: 'ghostwhite',
+  },
+  buttonTextEnabled: {
+    fontSize: 18,
+    color: 'dodgerblue',
+  },
+  buttonTextDisabled: {
+    fontSize: 16,
+    color: '#696969',
+  },
+});
