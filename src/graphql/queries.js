@@ -1,30 +1,41 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getTodo = /* GraphQL */ `
-  query GetTodo($id: ID!) {
-    getTodo(id: $id) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+export const getData = /* GraphQL */ `
+  query GetData($date: AWSDate!, $userid: ID!) {
+    getData(date: $date, userid: $userid) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;
-export const listTodos = /* GraphQL */ `
-  query ListTodos(
-    $filter: ModelTodoFilterInput
+export const getData2 = /* GraphQL */ `
+  query GetData2($enddate: AWSDate, $startdate: AWSDate, $userid: ID!) {
+    getData2(enddate: $enddate, startdate: $startdate, userid: $userid) {
+      calories
+      date
+      distance
+      stepCount
+      userid
+    }
+  }
+`;
+export const listData = /* GraphQL */ `
+  query ListData(
+    $filter: TableDataFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listTodos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listData(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
-        id
-        name
-        description
-        createdAt
-        updatedAt
+        calories
+        date
+        distance
+        stepCount
+        userid
       }
       nextToken
     }

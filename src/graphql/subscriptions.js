@@ -1,36 +1,72 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateTodo = /* GraphQL */ `
-  subscription OnCreateTodo {
-    onCreateTodo {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+export const onCreateData = /* GraphQL */ `
+  subscription OnCreateData(
+    $calories: Int
+    $date: AWSDate
+    $distance: Float
+    $stepCount: Int
+    $userid: ID
+  ) {
+    onCreateData(
+      calories: $calories
+      date: $date
+      distance: $distance
+      stepCount: $stepCount
+      userid: $userid
+    ) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;
-export const onUpdateTodo = /* GraphQL */ `
-  subscription OnUpdateTodo {
-    onUpdateTodo {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+export const onDeleteData = /* GraphQL */ `
+  subscription OnDeleteData(
+    $calories: Int
+    $date: AWSDate
+    $distance: Float
+    $stepCount: Int
+    $userid: ID
+  ) {
+    onDeleteData(
+      calories: $calories
+      date: $date
+      distance: $distance
+      stepCount: $stepCount
+      userid: $userid
+    ) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;
-export const onDeleteTodo = /* GraphQL */ `
-  subscription OnDeleteTodo {
-    onDeleteTodo {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+export const onUpdateData = /* GraphQL */ `
+  subscription OnUpdateData(
+    $calories: Int
+    $date: AWSDate
+    $distance: Float
+    $stepCount: Int
+    $userid: ID
+  ) {
+    onUpdateData(
+      calories: $calories
+      date: $date
+      distance: $distance
+      stepCount: $stepCount
+      userid: $userid
+    ) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;

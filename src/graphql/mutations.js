@@ -1,45 +1,59 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const createTodo = /* GraphQL */ `
-  mutation CreateTodo(
-    $input: CreateTodoInput!
-    $condition: ModelTodoConditionInput
+export const addData = /* GraphQL */ `
+  mutation AddData(
+    $calories: Int
+    $date: AWSDate
+    $distance: Float
+    $stepCount: Int
+    $userid: ID!
   ) {
-    createTodo(input: $input, condition: $condition) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+    addData(
+      calories: $calories
+      date: $date
+      distance: $distance
+      stepCount: $stepCount
+      userid: $userid
+    ) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;
-export const updateTodo = /* GraphQL */ `
-  mutation UpdateTodo(
-    $input: UpdateTodoInput!
-    $condition: ModelTodoConditionInput
-  ) {
-    updateTodo(input: $input, condition: $condition) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+export const createData = /* GraphQL */ `
+  mutation CreateData($input: CreateDataInput!) {
+    createData(input: $input) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;
-export const deleteTodo = /* GraphQL */ `
-  mutation DeleteTodo(
-    $input: DeleteTodoInput!
-    $condition: ModelTodoConditionInput
-  ) {
-    deleteTodo(input: $input, condition: $condition) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
+export const deleteData = /* GraphQL */ `
+  mutation DeleteData($input: DeleteDataInput!) {
+    deleteData(input: $input) {
+      calories
+      date
+      distance
+      stepCount
+      userid
+    }
+  }
+`;
+export const updateData = /* GraphQL */ `
+  mutation UpdateData($input: UpdateDataInput!) {
+    updateData(input: $input) {
+      calories
+      date
+      distance
+      stepCount
+      userid
     }
   }
 `;

@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import {RunButton, SendDataButton} from './src/RunButton';
 import Amplify, {API, graphqlOperation} from 'aws-amplify';
-import {createTodo, updateTodo, deleteTodo} from './src/graphql/mutations';
+//import {createTodo, updateTodo, deleteTodo} from './src/graphql/mutations';
 import awsconfig from './aws-exports';
 Amplify.configure(awsconfig);
 
@@ -74,7 +74,7 @@ export default class App extends React.Component {
     const todo = {name: 'My first todo', description: 'Hello world!'};
 
     /* create a todo */
-    await API.graphql(graphqlOperation(createTodo, {input: todo}))
+    /*await API.graphql(graphqlOperation(createTodo, {input: todo}))
       .then((test) => {
         console.log('Testing: ');
         console.log(test.toString());
@@ -82,7 +82,7 @@ export default class App extends React.Component {
       .catch()
       .finally(() => {
         this.setState({loading: false});
-      });
+      });*/
   }
 
   render() {
