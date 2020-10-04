@@ -3,80 +3,27 @@ import AppleHealthKit from 'rn-apple-healthkit';
 import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 export class AccessButton extends React.Component {
-  state = {
-    accessButtonDisabled: false,
-    accessButtonText: 'Check Health Data Access',
-    hasHealthDataAccess: false,
-  };
-
-  constructor(props) {
-    super(props);
-
-    this.defaultHealthDataOptions = {
-      permissions: {
-        read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
-      },
-    };
-
-    this.checkAccess = this.checkAccess.bind(this);
-  }
-
-  checkAccess = () => {
-    if (!this.state.hasHealthDataAccess) {
-      this.setState({
-        hasHealthDataAccess: AppleHealthKit.initHealthKit(
-          this.defaultHealthDataOptions,
-          (error, result) => {
-            if (error) {
-              alert('No data access!');
-              this.state.accessButtonText =
-                'Missing access - Please change settings';
-              return;
-            }
-            alert('Access granted');
-            this.setState({
-              accessButtonText: 'Access granted, Thank you.',
-              accessButtonDisabled: true,
-            });
-          },
-        ),
-      });
-    }
-  };
-
   render() {
     return (
       <TouchableOpacity
-        onPress={this.checkAccess}
-        disabled={this.state.accessButtonDisabled}>
+        onPress={this.props.onPress}
+        disabled={this.props.disabled}>
         <View
           style={[
             styles.button,
-            this.state.accessButtonDisabled
-              ? styles.buttonDisabled
-              : styles.buttonEnabled,
+            this.props.disabled ? styles.buttonDisabled : styles.buttonEnabled,
           ]}>
           <Text
             style={
-              this.state.accessButtonDisabled
+              this.props.disabled
                 ? styles.buttonTextDisabled
                 : styles.buttonTextEnabled
             }>
-            {this.state.accessButtonText}
+            {this.props.buttonText}
           </Text>
         </View>
       </TouchableOpacity>
     );
-  }
-}
-
-export class SendDataButton extends React.Component {
-  testAlert() {
-    alert('alert!');
-  }
-
-  render() {
-    return <Button title={'Update online data'} onPress={() => alert()} />;
   }
 }
 
