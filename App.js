@@ -14,10 +14,6 @@ import awsconfig from './aws-exports';
 Amplify.configure(awsconfig);
 
 const App: () => React$Node = () => {
-  function testFunction() {
-    Alert.alert('test function');
-  }
-
   return (
     <>
       <StatusBar barStyle="dark-content" />
@@ -30,12 +26,17 @@ const App: () => React$Node = () => {
         }}>
         <AccessButton />
         <SendDataButton />
-        <View style={{width: 250, height: 50, borderRadius: 5, backgroundColor: 'steelblue'}} />
+        <View
+          style={{
+            width: 250,
+            height: 50,
+            borderRadius: 5,
+            backgroundColor: 'steelblue',
+          }}
+        />
       </View>
     </>
   );
 };
-
-
 
 export default App;
