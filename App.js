@@ -13,30 +13,30 @@ import Amplify, {API, graphqlOperation} from 'aws-amplify';
 import awsconfig from './aws-exports';
 Amplify.configure(awsconfig);
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-        }}>
-        <AccessButton />
-        <SendDataButton />
+export default class App extends React.Component {
+  render() {
+    return (
+      <>
+        <StatusBar barStyle="dark-content" />
         <View
           style={{
-            width: 250,
-            height: 50,
-            borderRadius: 5,
-            backgroundColor: 'steelblue',
-          }}
-        />
-      </View>
-    </>
-  );
-};
-
-export default App;
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}>
+          <AccessButton/>
+          <SendDataButton/>
+          <View
+            style={{
+              width: 250,
+              height: 50,
+              borderRadius: 5,
+              backgroundColor: 'steelblue',
+            }}
+          />
+        </View>
+      </>
+    );
+  }
+}
