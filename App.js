@@ -7,18 +7,31 @@
  */
 
 import React from 'react';
-import {Alert, Button, View, StyleSheet, StatusBar, Text} from 'react-native';
-import {AccessButton, SendDataButton} from './src/HealthDataButton';
+import {
+  Alert,
+  Button,
+  View,
+  StyleSheet,
+  StatusBar,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
+import {RunButton, SendDataButton} from './src/RunButton';
 import Amplify, {API, graphqlOperation} from 'aws-amplify';
+import {createTodo, updateTodo, deleteTodo} from './src/graphql/mutations';
 import awsconfig from './aws-exports';
-import AppleHealthKit from 'rn-apple-healthkit';
 Amplify.configure(awsconfig);
+
+import AppleHealthKit from 'rn-apple-healthkit';
 
 export default class App extends React.Component {
   state = {
     hasHealthDataAccess: false,
+    loading: false,
     accessButtonDisabled: false,
     accessButtonText: 'Check for Health Data Access',
+    sendDataButtonDisabled: true,
+    sendDataButtonText: 'Update Data',
   };
 
   constructor(props) {
@@ -47,11 +60,29 @@ export default class App extends React.Component {
             this.setState({
               accessButtonText: 'Access granted, Thank you.',
               accessButtonDisabled: true,
+              sendDataButtonDisabled: false,
             });
           },
         ),
       });
     }
+  }
+
+  async sendDataButtonPressed() {
+    this.setState({loading: true});
+
+    const todo = {name: 'My first todo', description: 'Hello world!'};
+
+    /* create a todo */
+    await API.graphql(graphqlOperation(createTodo, {input: todo}))
+      .then((test) => {
+        console.log('Testing: ');
+        console.log(test.toString());
+      })
+      .catch()
+      .finally(() => {
+        this.setState({loading: false});
+      });
   }
 
   render() {
@@ -65,11 +96,17 @@ export default class App extends React.Component {
             alignItems: 'center',
             flexDirection: 'column',
           }}>
-          <AccessButton
+          <RunButton
             buttonText={this.state.accessButtonText}
             disabled={this.state.accessButtonDisabled}
             onPress={() => this.accessButtonPressed()}
           />
+          <RunButton
+            buttonText={this.state.sendDataButtonText}
+            disabled={this.state.sendDataButtonDisabled}
+            onPress={() => this.sendDataButtonPressed()}
+          />
+          <ActivityIndicator animating={this.state.loading} />
           <View
             style={{
               width: 250,

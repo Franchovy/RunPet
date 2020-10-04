@@ -2,7 +2,7 @@ import React from 'react';
 import AppleHealthKit from 'rn-apple-healthkit';
 import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
-export class AccessButton extends React.Component {
+export class RunButton extends React.Component {
   render() {
     return (
       <TouchableOpacity
