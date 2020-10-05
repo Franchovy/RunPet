@@ -62,13 +62,16 @@ export default class App extends React.Component {
                 'Missing access - Please change settings';
               return;
             }
+            let steps = -1;
+            let dist = -1.0;
+            let cals = -1;
 
             AppleHealthKit.getStepCount(null, (err, res) => {
               if (err) {
                 return;
               }
               console.log('Step count: ' + res.value);
-              this.state.todaysData.stepCount = res;
+              steps = res.value;
             });
             let distanceOptions = {unit: 'mile'};
             AppleHealthKit.getDistanceWalkingRunning(
@@ -78,7 +81,7 @@ export default class App extends React.Component {
                   return;
                 }
                 console.log('Distance: ' + res.value);
-                this.state.todaysData.distance = res;
+                dist = res.value;
               },
             );
             let today = new Date();
@@ -93,13 +96,18 @@ export default class App extends React.Component {
                 return;
               }
               console.log('Calories: ' + res[0].value);
-              this.state.todaysData.calories = res;
+              cals = res[0].value;
             });
 
             this.setState({
               accessButtonText: 'Access granted, Thank you.',
               accessButtonDisabled: true,
               sendDataButtonDisabled: false,
+              todaysData: {
+                steps: steps,
+                distance: dist,
+                calories: cals,
+              },
             });
           },
         ),
@@ -157,7 +165,37 @@ export default class App extends React.Component {
             disabled={this.state.sendDataButtonDisabled}
             onPress={() => this.sendDataButtonPressed()}
           />
-          <ActivityIndicator animating={this.state.loading} />
+          <ActivityIndicator
+            animating={this.state.loading}
+            style={{marginBottom: 10}}
+          />
+          <View style={{margin: 10}}>
+            <Text style={{fontSize: 20}}>Your scores today:</Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              padding: 20,
+            }}>
+            <View style={{marginBottom: 15}}>
+              <Text style={{fontSize: 18, fontWeight: 'bold', margin: 10}}>
+                Steps:{' '}
+              </Text>
+              <Text>{this.state.todaysData.stepCount} steps</Text>
+            </View>
+            <View style={{marginBottom: 15}}>
+              <Text style={{fontSize: 18, fontWeight: 'bold', margin: 10}}>
+                Calories:{' '}
+              </Text>
+              <Text>{this.state.todaysData.calories} Cals</Text>
+            </View>
+            <View style={{marginBottom: 15}}>
+              <Text style={{fontSize: 18, fontWeight: 'bold', margin: 10}}>
+                Distance:{' '}
+              </Text>
+              <Text>{this.state.todaysData.distance} mi.</Text>
+            </View>
+          </View>
         </View>
       </>
     );
