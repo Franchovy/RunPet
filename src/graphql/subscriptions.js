@@ -3,70 +3,70 @@
 
 export const onCreateData = /* GraphQL */ `
   subscription OnCreateData(
-    $calories: Int
+    $userid: String
     $date: AWSDate
-    $distance: Float
     $stepCount: Int
-    $userid: ID
+    $calories: Int
+    $distance: Float
   ) {
     onCreateData(
-      calories: $calories
-      date: $date
-      distance: $distance
-      stepCount: $stepCount
       userid: $userid
-    ) {
-      calories
-      date
-      distance
-      stepCount
-      userid
-    }
-  }
-`;
-export const onDeleteData = /* GraphQL */ `
-  subscription OnDeleteData(
-    $calories: Int
-    $date: AWSDate
-    $distance: Float
-    $stepCount: Int
-    $userid: ID
-  ) {
-    onDeleteData(
-      calories: $calories
       date: $date
-      distance: $distance
       stepCount: $stepCount
-      userid: $userid
+      calories: $calories
+      distance: $distance
     ) {
-      calories
-      date
-      distance
-      stepCount
       userid
+      date
+      stepCount
+      calories
+      distance
     }
   }
 `;
 export const onUpdateData = /* GraphQL */ `
   subscription OnUpdateData(
-    $calories: Int
+    $userid: String
     $date: AWSDate
-    $distance: Float
     $stepCount: Int
-    $userid: ID
+    $calories: Int
+    $distance: Float
   ) {
     onUpdateData(
-      calories: $calories
-      date: $date
-      distance: $distance
-      stepCount: $stepCount
       userid: $userid
+      date: $date
+      stepCount: $stepCount
+      calories: $calories
+      distance: $distance
     ) {
-      calories
-      date
-      distance
-      stepCount
       userid
+      date
+      stepCount
+      calories
+      distance
+    }
+  }
+`;
+export const onDeleteData = /* GraphQL */ `
+  subscription OnDeleteData(
+    $userid: String
+    $date: AWSDate
+    $stepCount: Int
+    $calories: Int
+    $distance: Float
+  ) {
+    onDeleteData(
+      userid: $userid
+      date: $date
+      stepCount: $stepCount
+      calories: $calories
+      distance: $distance
+    ) {
+      userid
+      date
+      stepCount
+      calories
+      distance
     }
   }
 `;

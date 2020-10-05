@@ -1,25 +1,25 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getData = /* GraphQL */ `
-  query GetData($date: AWSDate!, $userid: ID!) {
-    getData(date: $date, userid: $userid) {
-      calories
-      date
-      distance
-      stepCount
+export const getUser = /* GraphQL */ `
+  query GetUser($userid: String!) {
+    getUser(userid: $userid) {
       userid
+      date
+      stepCount
+      calories
+      distance
     }
   }
 `;
-export const getData2 = /* GraphQL */ `
-  query GetData2($enddate: AWSDate, $startdate: AWSDate, $userid: ID!) {
-    getData2(enddate: $enddate, startdate: $startdate, userid: $userid) {
-      calories
-      date
-      distance
-      stepCount
+export const getData = /* GraphQL */ `
+  query GetData($userid: String!, $date: AWSDate!) {
+    getData(userid: $userid, date: $date) {
       userid
+      date
+      stepCount
+      calories
+      distance
     }
   }
 `;
@@ -31,11 +31,11 @@ export const listData = /* GraphQL */ `
   ) {
     listData(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
-        calories
-        date
-        distance
-        stepCount
         userid
+        date
+        stepCount
+        calories
+        distance
       }
       nextToken
     }

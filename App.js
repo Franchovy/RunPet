@@ -18,10 +18,10 @@ import {
 } from 'react-native';
 import {RunButton, SendDataButton} from './src/RunButton';
 import Amplify, {API, graphqlOperation} from 'aws-amplify';
-//import {createTodo, updateTodo, deleteTodo} from './src/graphql/mutations';
-import awsconfig from './aws-exports';
+import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
-
+import {createData} from './src/graphql/mutations';
+import {getData} from './src/graphql/queries';
 import AppleHealthKit from 'rn-apple-healthkit';
 
 export default class App extends React.Component {
@@ -32,6 +32,11 @@ export default class App extends React.Component {
     accessButtonText: 'Check for Health Data Access',
     sendDataButtonDisabled: true,
     sendDataButtonText: 'Update Data',
+    todaysData: {
+      stepCount: -1,
+      calories: -1,
+      distance: -1.0,
+    },
   };
 
   constructor(props) {
@@ -57,6 +62,40 @@ export default class App extends React.Component {
                 'Missing access - Please change settings';
               return;
             }
+
+            AppleHealthKit.getStepCount(null, (err, res) => {
+              if (err) {
+                return;
+              }
+              console.log('Step count: ' + res.value);
+              this.state.todaysData.stepCount = res;
+            });
+            let distanceOptions = {unit: 'mile'};
+            AppleHealthKit.getDistanceWalkingRunning(
+              distanceOptions,
+              (err, res) => {
+                if (err) {
+                  return;
+                }
+                console.log('Distance: ' + res.value);
+                this.state.todaysData.distance = res;
+              },
+            );
+            let today = new Date();
+            let yesterday = new Date(today.getDate() - 1);
+            let options = {
+              startDate: yesterday.toISOString(), // required
+              endDate: today.toISOString(), // optional; default now
+            };
+            AppleHealthKit.getActiveEnergyBurned(options, (err, res) => {
+              if (err) {
+                console.log('Error: ' + res);
+                return;
+              }
+              console.log('Calories: ' + res[0].value);
+              this.state.todaysData.calories = res;
+            });
+
             this.setState({
               accessButtonText: 'Access granted, Thank you.',
               accessButtonDisabled: true,
@@ -71,18 +110,27 @@ export default class App extends React.Component {
   async sendDataButtonPressed() {
     this.setState({loading: true});
 
-    const todo = {name: 'My first todo', description: 'Hello world!'};
-
-    /* create a todo */
-    /*await API.graphql(graphqlOperation(createTodo, {input: todo}))
-      .then((test) => {
-        console.log('Testing: ');
-        console.log(test.toString());
-      })
-      .catch()
+    await API.graphql(
+      graphqlOperation(createData, {
+        input: {
+          userid: 'johnny',
+          date: '2020-10-04',
+        },
+      }),
+    )
+      .then(
+        (result) => {
+          console.log('Testing: ');
+          console.log(result);
+        },
+        (error) => {
+          console.log('Error: ');
+          console.log(error);
+        },
+      )
       .finally(() => {
         this.setState({loading: false});
-      });*/
+      });
   }
 
   render() {
@@ -96,6 +144,9 @@ export default class App extends React.Component {
             alignItems: 'center',
             flexDirection: 'column',
           }}>
+          <Text style={{fontSize: 40, fontWeight: 'bold', marginBottom: 50}}>
+            RunPet
+          </Text>
           <RunButton
             buttonText={this.state.accessButtonText}
             disabled={this.state.accessButtonDisabled}
@@ -107,14 +158,6 @@ export default class App extends React.Component {
             onPress={() => this.sendDataButtonPressed()}
           />
           <ActivityIndicator animating={this.state.loading} />
-          <View
-            style={{
-              width: 250,
-              height: 50,
-              borderRadius: 5,
-              backgroundColor: 'steelblue',
-            }}
-          />
         </View>
       </>
     );
