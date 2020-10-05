@@ -62,16 +62,16 @@ export default class App extends React.Component {
                 'Missing access - Please change settings';
               return;
             }
-            let steps = -1;
-            let dist = -1.0;
-            let cals = -1;
+            let steps = -2;
+            let dist = -2.0;
+            let cals = -2;
 
             AppleHealthKit.getStepCount(null, (err, res) => {
               if (err) {
                 return;
               }
               console.log('Step count: ' + res.value);
-              steps = res.value;
+              steps = parseInt(res.value);
             });
             let distanceOptions = {unit: 'mile'};
             AppleHealthKit.getDistanceWalkingRunning(
@@ -81,7 +81,7 @@ export default class App extends React.Component {
                   return;
                 }
                 console.log('Distance: ' + res.value);
-                dist = res.value;
+                dist = parseFloat(res.value);
               },
             );
             let today = new Date();
@@ -95,8 +95,8 @@ export default class App extends React.Component {
                 console.log('Error: ' + res);
                 return;
               }
-              console.log('Calories: ' + res[0].value);
-              cals = res[0].value;
+              cals = parseInt(res[0].value);
+              console.log('Calories: ' + cals);
             });
 
             this.setState({
@@ -104,7 +104,7 @@ export default class App extends React.Component {
               accessButtonDisabled: true,
               sendDataButtonDisabled: false,
               todaysData: {
-                steps: steps,
+                stepCount: steps,
                 distance: dist,
                 calories: cals,
               },
