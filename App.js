@@ -56,54 +56,54 @@ export default class App extends React.Component {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
-    this.sumSteps = 0;
-    this.sumCals = 0;
-    this.sumDist = 0.0;
 
     // TODO check if health data is already available
   }
 
-  async calculateDailyData(dayStart: Date): any {
-    let dayEnd = new Date(dayStart.getDate() - 1);
-    let dateOptions = {
-      date: dayStart,
+  async calculateDailyData(dayEnd: Date): any {
+    let dayStart = new Date(dayEnd.getDate() - 1);
+    let dateOptionsday = {
+      date: dayEnd.toISOString(),
+    };
+    let dateOptionsPeriod = {
       startDate: dayStart.toISOString(),
       endDate: dayEnd.toISOString(),
     };
-    let stepCount = 0;
-    let distance = 0.0;
-    let calories = 0;
     // Get step count
-    await AppleHealthKit.getStepCount(dateOptions, (err, res) => {
+    AppleHealthKit.getStepCount(dateOptionsday, (err, res) => {
       if (err) {
         console.log('Get step count today error: ' + err);
         return;
       }
-      stepCount = parseInt(res.value);
+      parseInt(res.value);
     });
     // Get distance walked
     AppleHealthKit.getDistanceWalkingRunning(
-      {
-        ...dateOptions,
-        ...{unit: this.state.distanceUnitMiles ? 'mile' : 'kilometer'},
-      },
+      {...{unit: 'mile'}, ...dateOptionsday},
       (err, res) => {
         if (err) {
           console.log('Get distance error: ' + err);
           return;
         }
-        distance = parseFloat(res.value);
+        parseFloat(res.value);
       },
     );
     // Get Calories burned
-    AppleHealthKit.getActiveEnergyBurned(dateOptions, (err, res) => {
-      if (err) {
-        console.log('Get Calories error: ' + res);
-        return;
-      }
-      calories = parseInt(res[0].value);
-    });
-    return {stepCount: stepCount, distance: distance, calories: calories};
+    AppleHealthKit.getActiveEnergyBurned(
+      dateOptionsPeriod,
+      (err, res) => {
+        if (err) {
+          console.log('Get Calories error: ' + res);
+          return;
+        }
+        if (res.length === 0) {
+          console.log('Returned no Calorie data.');
+          return;
+        }
+        parseInt(res[0].value);
+      },
+    );
+    return {stepCount: 0, distance: 0, calories: 0};
   }
 
   async calculateWeeklyData() {
@@ -117,11 +117,19 @@ export default class App extends React.Component {
   }
 
   async updateTodaysData() {
+    let todaysData = await this.calculateDailyData(new Date());
 
+    this.setState({
+      todaysData: {
+        stepCount: todaysData.stepCount,
+        distance: todaysData.distance,
+        calories: todaysData.calories,
+      },
+    });
   }
 
   async updateWeeklyData() {
-
+    let weeklyData = await this.calculateWeeklyData();
   }
 
   accessButtonPressed() {
@@ -147,11 +155,8 @@ export default class App extends React.Component {
             hasHealthDataAccess: true,
           });
 
-          // Configure options for today's data
-          let today = new Date();
-
-          this.updateTodaysData(this.calculateDailyData(today));
-          this.updateWeeklyData(this.calculateWeeklyData(today));
+          this.updateTodaysData();
+          //this.updateWeeklyData();
         },
       );
     }
