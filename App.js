@@ -203,17 +203,26 @@ export default class App extends React.Component {
           <DataDisplay
             arr={[
               {
-                name: 'Steps',
+                name:
+                  this.state.todaysData.stepCount.valueOf() == 1
+                    ? 'Step'
+                    : 'Steps',
                 label: 'per day',
                 data: this.state.todaysData.stepCount,
               },
               {
-                name: 'Cals',
+                name:
+                  this.state.todaysData.calories.valueOf() == 1
+                    ? 'Calorie'
+                    : 'Calories',
                 label: 'per day',
                 data: this.state.todaysData.calories,
               },
               {
-                name: 'Miles',
+                name:
+                  this.state.todaysData.distance.valueOf() == 1.0
+                    ? 'Mile'
+                    : 'Miles',
                 label: 'per day',
                 data: this.state.todaysData.distance,
               },
