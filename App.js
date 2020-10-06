@@ -139,7 +139,10 @@ export default class App extends React.Component {
       graphqlOperation(createData, {
         input: {
           userid: 'johnny',
-          date: '2020-10-04',
+          date: this.AWSFormatString(new Date()),
+          distance: this.state.todaysData.distance,
+          stepCount: this.state.todaysData.stepCount,
+          calories: this.state.todaysData.calories,
         },
       }),
     )
@@ -156,6 +159,11 @@ export default class App extends React.Component {
       .finally(() => {
         this.setState({loading: false});
       });
+  }
+
+  AWSFormatString(date: Date): String {
+    let dateString = date.toISOString();
+    return dateString.slice(0, dateString.lastIndexOf('T'));
   }
 
   render() {
