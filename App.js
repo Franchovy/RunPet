@@ -35,7 +35,13 @@ export default class App extends React.Component {
     accessButtonText: 'Check for Health Data Access',
     sendDataButtonDisabled: true,
     sendDataButtonText: 'Update Data',
+    distanceUnitMiles: true,
     todaysData: {
+      stepCount: -1,
+      calories: -1,
+      distance: -1.0,
+    },
+    lastWeekData: {
       stepCount: -1,
       calories: -1,
       distance: -1.0,
@@ -50,88 +56,104 @@ export default class App extends React.Component {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
+    this.sumSteps = 0;
+    this.sumCals = 0;
+    this.sumDist = 0.0;
 
     // TODO check if health data is already available
+  }
+
+  async calculateDailyData(dayStart: Date): any {
+    let dayEnd = new Date(dayStart.getDate() - 1);
+    let dateOptions = {
+      date: dayStart,
+      startDate: dayStart.toISOString(),
+      endDate: dayEnd.toISOString(),
+    };
+    let stepCount = 0;
+    let distance = 0.0;
+    let calories = 0;
+    // Get step count
+    await AppleHealthKit.getStepCount(dateOptions, (err, res) => {
+      if (err) {
+        console.log('Get step count today error: ' + err);
+        return;
+      }
+      stepCount = parseInt(res.value);
+    });
+    // Get distance walked
+    AppleHealthKit.getDistanceWalkingRunning(
+      {
+        ...dateOptions,
+        ...{unit: this.state.distanceUnitMiles ? 'mile' : 'kilometer'},
+      },
+      (err, res) => {
+        if (err) {
+          console.log('Get distance error: ' + err);
+          return;
+        }
+        distance = parseFloat(res.value);
+      },
+    );
+    // Get Calories burned
+    AppleHealthKit.getActiveEnergyBurned(dateOptions, (err, res) => {
+      if (err) {
+        console.log('Get Calories error: ' + res);
+        return;
+      }
+      calories = parseInt(res[0].value);
+    });
+    return {stepCount: stepCount, distance: distance, calories: calories};
+  }
+
+  async calculateWeeklyData() {
+    // Calculate last week's average data
+    for (let i = 1; i < 8; i++) {
+      let date = new Date(new Date() - i);
+      let dateOptions = {
+        date: date.toISOString(),
+      };
+    }
+  }
+
+  async updateTodaysData() {
+
+  }
+
+  async updateWeeklyData() {
+
   }
 
   accessButtonPressed() {
     if (!this.state.hasHealthDataAccess) {
       this.setState({
-        hasHealthDataAccess: AppleHealthKit.initHealthKit(
-          this.defaultHealthDataOptions,
-          (error, result) => {
-            if (error) {
-              this.state.accessButtonText =
-                'Missing access - Please change settings';
-              return;
-            }
-            let today = new Date();
-            let yesterday = new Date(today.getDate() - 1);
-            let options = {
-              startDate: yesterday.toISOString(), // required
-              endDate: today.toISOString(), // optional; default now
-            };
-
-            AppleHealthKit.getStepCount(options, (err, res) => {
-              if (err) {
-                console.log('Get step count error: ' + err);
-                return;
-              }
-              console.log('Step count: ' + res.value);
-
-              this.setState({
-                todaysData: {
-                  stepCount: parseInt(res.value),
-                  calories: this.state.todaysData.calories,
-                  distance: this.state.todaysData.distance,
-                },
-              });
-            });
-            let distanceOptions = {
-              unit: 'mile',
-            };
-            AppleHealthKit.getDistanceWalkingRunning(
-              distanceOptions,
-              (err, res) => {
-                if (err) {
-                  console.log('Get distance error: ' + err);
-                  return;
-                }
-                console.log('Distance: ' + res.value);
-
-                this.setState({
-                  todaysData: {
-                    stepCount: this.state.todaysData.stepCount,
-                    calories: this.state.todaysData.calories,
-                    distance: parseFloat(res.value),
-                  },
-                });
-              },
-            );
-            AppleHealthKit.getActiveEnergyBurned(options, (err, res) => {
-              if (err) {
-                console.log('Get Calories error: ' + res);
-                return;
-              }
-              console.log('Calories: ' + res[0].value);
-
-              this.setState({
-                todaysData: {
-                  stepCount: this.state.todaysData.stepCount,
-                  calories: parseInt(res[0].value),
-                  distance: this.state.todaysData.distance,
-                },
-              });
-            });
-
-            this.setState({
-              accessButtonText: 'Access granted, Thank you.',
-              accessButtonDisabled: true,
-              sendDataButtonDisabled: false,
-            });
-          },
-        ),
+        accessButtonText: 'Missing access - Please change settings',
+        accessButtonDisabled: false,
+        sendDataButtonDisabled: true,
+        hasHealthDataAccess: false,
       });
+
+      AppleHealthKit.initHealthKit(
+        this.defaultHealthDataOptions,
+        (error, result) => {
+          if (error) {
+            console.log('Health Data Access not granted!');
+            return;
+          }
+          this.setState({
+            accessButtonText: 'Access granted, Thank you.',
+            accessButtonDisabled: true,
+            sendDataButtonDisabled: false,
+            hasHealthDataAccess: true,
+          });
+
+          // Configure options for today's data
+          let today = new Date();
+
+          this.updateTodaysData(this.calculateDailyData(today));
+          this.updateWeeklyData(this.calculateWeeklyData(today));
+        },
+      );
     }
   }
 
@@ -162,6 +184,75 @@ export default class App extends React.Component {
       .finally(() => {
         this.setState({loading: false});
       });
+  }
+
+  displayData() {
+    return (
+      <View style={{alignItems: 'center'}}>
+        <View style={{margin: 10}}>
+          <Text style={{fontSize: 20}}>Over the last week you averaged:</Text>
+        </View>
+        <DataDisplay
+          arr={[
+            {
+              name:
+                this.state.lastWeekData.stepCount.valueOf() === 1
+                  ? 'Step'
+                  : 'Steps',
+              label: 'per day',
+              data: this.state.lastWeekData.stepCount,
+            },
+            {
+              name:
+                this.state.lastWeekData.calories.valueOf() === 1
+                  ? 'Calorie'
+                  : 'Calories',
+              label: 'per day',
+              data: this.state.lastWeekData.calories,
+            },
+            {
+              name:
+                this.state.lastWeekData.distance.valueOf() === 1.0
+                  ? 'Mile'
+                  : 'Miles',
+              label: 'per day',
+              data: this.state.lastWeekData.distance,
+            },
+          ]}
+        />
+        <View style={{margin: 10}}>
+          <Text style={{fontSize: 20}}>Your scores today:</Text>
+        </View>
+        <DataDisplay
+          arr={[
+            {
+              name:
+                this.state.todaysData.stepCount.valueOf() === 1
+                  ? 'Step'
+                  : 'Steps',
+              label: 'per day',
+              data: this.state.todaysData.stepCount,
+            },
+            {
+              name:
+                this.state.todaysData.calories.valueOf() === 1
+                  ? 'Calorie'
+                  : 'Calories',
+              label: 'per day',
+              data: this.state.todaysData.calories,
+            },
+            {
+              name:
+                this.state.todaysData.distance.valueOf() === 1.0
+                  ? 'Mile'
+                  : 'Miles',
+              label: 'per day',
+              data: this.state.todaysData.distance,
+            },
+          ]}
+        />
+      </View>
+    );
   }
 
   AWSFormatString(date: Date): String {
@@ -197,37 +288,8 @@ export default class App extends React.Component {
             animating={this.state.loading}
             style={{marginBottom: 10}}
           />
-          <View style={{margin: 10}}>
-            <Text style={{fontSize: 20}}>Your scores today:</Text>
-          </View>
-          <DataDisplay
-            arr={[
-              {
-                name:
-                  this.state.todaysData.stepCount.valueOf() == 1
-                    ? 'Step'
-                    : 'Steps',
-                label: 'per day',
-                data: this.state.todaysData.stepCount,
-              },
-              {
-                name:
-                  this.state.todaysData.calories.valueOf() == 1
-                    ? 'Calorie'
-                    : 'Calories',
-                label: 'per day',
-                data: this.state.todaysData.calories,
-              },
-              {
-                name:
-                  this.state.todaysData.distance.valueOf() == 1.0
-                    ? 'Mile'
-                    : 'Miles',
-                label: 'per day',
-                data: this.state.todaysData.distance,
-              },
-            ]}
-          />
+
+          {this.displayData()}
         </View>
       </>
     );
