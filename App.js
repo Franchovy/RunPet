@@ -89,20 +89,23 @@ export default class App extends React.Component {
       },
     );
     // Get Calories burned
-    AppleHealthKit.getActiveEnergyBurned(
-      dateOptionsPeriod,
-      (err, res) => {
+    let caloriesPromise = new Promise((resolve, reject) => {
+      AppleHealthKit.getActiveEnergyBurned(dateOptionsPeriod, (err, res) => {
         if (err) {
           console.log('Get Calories error: ' + res);
-          return;
+          reject();
         }
         if (res.length === 0) {
           console.log('Returned no Calorie data.');
-          return;
+          reject();
         }
-        parseInt(res[0].value);
-      },
-    );
+        resolve(parseInt(res[0].value));
+      });
+    });
+
+    let caloriesValue = await caloriesPromise;
+    console.log(caloriesValue);
+
     return {stepCount: 0, distance: 0, calories: 0};
   }
 
