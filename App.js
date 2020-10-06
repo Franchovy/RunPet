@@ -62,52 +62,69 @@ export default class App extends React.Component {
                 'Missing access - Please change settings';
               return;
             }
-            let steps = -2;
-            let dist = -2.0;
-            let cals = -2;
-
-            AppleHealthKit.getStepCount(null, (err, res) => {
-              if (err) {
-                return;
-              }
-              console.log('Step count: ' + res.value);
-              steps = parseInt(res.value);
-            });
-            let distanceOptions = {unit: 'mile'};
-            AppleHealthKit.getDistanceWalkingRunning(
-              distanceOptions,
-              (err, res) => {
-                if (err) {
-                  return;
-                }
-                console.log('Distance: ' + res.value);
-                dist = parseFloat(res.value);
-              },
-            );
             let today = new Date();
             let yesterday = new Date(today.getDate() - 1);
             let options = {
               startDate: yesterday.toISOString(), // required
               endDate: today.toISOString(), // optional; default now
             };
-            AppleHealthKit.getActiveEnergyBurned(options, (err, res) => {
+
+            AppleHealthKit.getStepCount(options, (err, res) => {
               if (err) {
-                console.log('Error: ' + res);
+                console.log('Get step count error: ' + err);
                 return;
               }
-              cals = parseInt(res[0].value);
-              console.log('Calories: ' + cals);
+              console.log('Step count: ' + res.value);
+
+              this.setState({
+                todaysData: {
+                  stepCount: parseInt(res.value),
+                  calories: this.state.todaysData.calories,
+                  distance: this.state.todaysData.distance,
+                },
+              });
+            });
+            let distanceOptions = {
+              unit: 'mile',
+            };
+            AppleHealthKit.getDistanceWalkingRunning(
+              distanceOptions,
+              (err, res) => {
+                if (err) {
+                  console.log('Get distance error: ' + err);
+                  return;
+                }
+                console.log('Distance: ' + res.value);
+
+                this.setState({
+                  todaysData: {
+                    stepCount: this.state.todaysData.stepCount,
+                    calories: this.state.todaysData.calories,
+                    distance: parseFloat(res.value),
+                  },
+                });
+              },
+            );
+            AppleHealthKit.getActiveEnergyBurned(options, (err, res) => {
+              if (err) {
+                console.log('Get Calories error: ' + res);
+                return;
+              }
+              console.log('Calories: ' + res[0].value);
+
+              this.setState({
+                todaysData: {
+                  stepCount: this.state.todaysData.stepCount,
+                  calories: parseInt(res[0].value),
+                  distance: this.state.todaysData.distance,
+                },
+              });
             });
 
             this.setState({
               accessButtonText: 'Access granted, Thank you.',
               accessButtonDisabled: true,
               sendDataButtonDisabled: false,
-              todaysData: {
-                stepCount: steps,
-                distance: dist,
-                calories: cals,
-              },
             });
           },
         ),
