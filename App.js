@@ -16,13 +16,16 @@ import {
   Text,
   ActivityIndicator,
 } from 'react-native';
-import {RunButton, SendDataButton} from './src/RunButton';
 import Amplify, {API, graphqlOperation} from 'aws-amplify';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
 import {createData} from './src/graphql/mutations';
 import {getData} from './src/graphql/queries';
+
 import AppleHealthKit from 'rn-apple-healthkit';
+
+import {RunButton} from './src/RunButton';
+import {DataDisplay} from './src/DataDisplay';
 
 export default class App extends React.Component {
   state = {
@@ -197,30 +200,25 @@ export default class App extends React.Component {
           <View style={{margin: 10}}>
             <Text style={{fontSize: 20}}>Your scores today:</Text>
           </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              padding: 20,
-            }}>
-            <View style={{marginBottom: 15}}>
-              <Text style={{fontSize: 18, fontWeight: 'bold', margin: 10}}>
-                Steps:{' '}
-              </Text>
-              <Text>{this.state.todaysData.stepCount} steps</Text>
-            </View>
-            <View style={{marginBottom: 15}}>
-              <Text style={{fontSize: 18, fontWeight: 'bold', margin: 10}}>
-                Calories:{' '}
-              </Text>
-              <Text>{this.state.todaysData.calories} Cals</Text>
-            </View>
-            <View style={{marginBottom: 15}}>
-              <Text style={{fontSize: 18, fontWeight: 'bold', margin: 10}}>
-                Distance:{' '}
-              </Text>
-              <Text>{this.state.todaysData.distance} mi.</Text>
-            </View>
-          </View>
+          <DataDisplay
+            arr={[
+              {
+                name: 'Steps',
+                label: 'per day',
+                data: this.state.todaysData.stepCount,
+              },
+              {
+                name: 'Cals',
+                label: 'per day',
+                data: this.state.todaysData.calories,
+              },
+              {
+                name: 'Miles',
+                label: 'per day',
+                data: this.state.todaysData.distance,
+              },
+            ]}
+          />
         </View>
       </>
     );
