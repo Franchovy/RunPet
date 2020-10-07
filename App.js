@@ -60,19 +60,29 @@ export default class App extends React.Component {
     // TODO check if health data is already available
   }
 
-  async getCalories(dateOptions): Promise {
+  async getCalories(dateOptionsPeriod): Promise {
     return new Promise((resolve, reject) => {
-      AppleHealthKit.getActiveEnergyBurned(dateOptions, (err, res) => {
+      AppleHealthKit.getActiveEnergyBurned(dateOptionsPeriod, (err, res) => {
         if (err) {
           if (err.message.startsWith('No data available')) {
-            console.log('Error: No calories data available.');
+            console.log(
+              'Error: No calories data available for ' +
+                dateOptionsPeriod.startDate +
+                ' - ' +
+                dateOptionsPeriod.endDate,
+            );
           } else {
             console.log('Calories error.');
           }
           return reject(err);
         }
         if (res.length === 0) {
-          console.log('Returned no Calorie data.');
+          console.log(
+            'Returned no Calorie data for ' +
+              dateOptionsPeriod.startDate +
+              ' - ' +
+              dateOptionsPeriod.endDate,
+          );
           return reject();
         }
         resolve(parseInt(res[0].value));
@@ -87,7 +97,9 @@ export default class App extends React.Component {
         (err, res) => {
           if (err) {
             if (err.message.startsWith('No data available')) {
-              console.log('Error: No distance data available.');
+              console.log(
+                'Error: No distance data available for ' + dateOptions.date,
+              );
             } else {
               console.log('Distance error.');
             }
@@ -105,7 +117,9 @@ export default class App extends React.Component {
       AppleHealthKit.getStepCount(dateOptions, (err, res) => {
         if (err) {
           if (err.message.startsWith('No data available')) {
-            console.log('Error: No step count data available.');
+            console.log(
+              'Error: No step count data available for ' + dateOptions.date,
+            );
           } else {
             console.log('Step count error.');
           }
@@ -118,8 +132,9 @@ export default class App extends React.Component {
 
   async calculateDailyData(dayEnd: Date): Promise {
     return new Promise((resolve, reject) => {
-      let dayStart = new Date(dayEnd.getDate() - 1);
-      let dateOptionsday = {
+      let dayStart = new Date();
+      dayStart.setDate(dayEnd.getDate() - 1);
+      let dateOptionsDay = {
         date: dayEnd.toISOString(),
       };
       let dateOptionsPeriod = {
@@ -128,9 +143,9 @@ export default class App extends React.Component {
       };
       (async () => {
         // Get step count
-        let stepCount = await this.getStepCount(dateOptionsday);
+        let stepCount = await this.getStepCount(dateOptionsDay);
         // Get distance walked
-        let distance = await this.getDistance(dateOptionsday, {unit: 'mile'});
+        let distance = await this.getDistance(dateOptionsDay, {unit: 'mile'});
         // Get Calories burned
         let calories = await this.getCalories(dateOptionsPeriod);
         resolve({stepCount: stepCount, distance: distance, calories: calories});
@@ -145,8 +160,8 @@ export default class App extends React.Component {
       (async () => {
         let todayDate = new Date();
         for (let i = 1; i < 8; i++) {
-          let date = new Date(todayDate.getDate() - i);
-          console.log('Daily Data for date: ' + date.toISOString());
+          let date = new Date();
+          date.setDate(todayDate.getDate() - i);
           let dayData = await this.calculateDailyData(date);
           sumData.stepCount += dayData.stepCount;
           sumData.distance += dayData.distance;
