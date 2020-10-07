@@ -60,37 +60,9 @@ export default class App extends React.Component {
     // TODO check if health data is already available
   }
 
-  async calculateDailyData(dayEnd: Date): any {
-    let dayStart = new Date(dayEnd.getDate() - 1);
-    let dateOptionsday = {
-      date: dayEnd.toISOString(),
-    };
-    let dateOptionsPeriod = {
-      startDate: dayStart.toISOString(),
-      endDate: dayEnd.toISOString(),
-    };
-    // Get step count
-    AppleHealthKit.getStepCount(dateOptionsday, (err, res) => {
-      if (err) {
-        console.log('Get step count today error: ' + err);
-        return;
-      }
-      parseInt(res.value);
-    });
-    // Get distance walked
-    AppleHealthKit.getDistanceWalkingRunning(
-      {...{unit: 'mile'}, ...dateOptionsday},
-      (err, res) => {
-        if (err) {
-          console.log('Get distance error: ' + err);
-          return;
-        }
-        parseFloat(res.value);
-      },
-    );
-    // Get Calories burned
-    let caloriesPromise = new Promise((resolve, reject) => {
-      AppleHealthKit.getActiveEnergyBurned(dateOptionsPeriod, (err, res) => {
+  async getCalories(dateOptions): Promise {
+    return new Promise((resolve, reject) => {
+      AppleHealthKit.getActiveEnergyBurned(dateOptions, (err, res) => {
         if (err) {
           console.log('Get Calories error: ' + res);
           reject();
@@ -102,11 +74,55 @@ export default class App extends React.Component {
         resolve(parseInt(res[0].value));
       });
     });
+  }
 
-    let caloriesValue = await caloriesPromise;
-    console.log(caloriesValue);
+  async getDistance(dateOptions, unitOptions): Promise {
+    return new Promise((resolve, reject) => {
+      AppleHealthKit.getDistanceWalkingRunning(
+        {...unitOptions, ...dateOptions},
+        (err, res) => {
+          if (err) {
+            console.log('Get distance error: ' + err);
+            return;
+          }
+          resolve(parseFloat(res.value));
+        },
+      );
+    });
+  }
 
-    return {stepCount: 0, distance: 0, calories: 0};
+  async getStepCount(dateOptions): Promise {
+    return new Promise((resolve, reject) => {
+      AppleHealthKit.getStepCount(dateOptions, (err, res) => {
+        if (err) {
+          console.log('Get step count today error: ' + err);
+          return;
+        }
+        resolve(parseInt(res.value));
+      });
+    });
+  }
+
+  async calculateDailyData(dayEnd: Date): Promise {
+    return new Promise((resolve, reject) => {
+      let dayStart = new Date(dayEnd.getDate() - 1);
+      let dateOptionsday = {
+        date: dayEnd.toISOString(),
+      };
+      let dateOptionsPeriod = {
+        startDate: dayStart.toISOString(),
+        endDate: dayEnd.toISOString(),
+      };
+      (async () => {
+        // Get step count
+        let stepCount = await this.getStepCount(dateOptionsday);
+        // Get distance walked
+        let distance = await this.getDistance(dateOptionsday, {unit: 'mile'});
+        // Get Calories burned
+        let calories = await this.getCalories(dateOptionsPeriod);
+        resolve({stepCount: stepCount, distance: distance, calories: calories});
+      })();
+    });
   }
 
   async calculateWeeklyData() {
