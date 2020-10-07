@@ -64,12 +64,16 @@ export default class App extends React.Component {
     return new Promise((resolve, reject) => {
       AppleHealthKit.getActiveEnergyBurned(dateOptions, (err, res) => {
         if (err) {
-          console.log('Get Calories error: ' + res);
-          reject();
+          if (err.message.startsWith('No data available')) {
+            console.log('Error: No calories data available.');
+          } else {
+            console.log('Calories error.');
+          }
+          return reject(err);
         }
         if (res.length === 0) {
           console.log('Returned no Calorie data.');
-          reject();
+          return reject();
         }
         resolve(parseInt(res[0].value));
       });
@@ -82,8 +86,13 @@ export default class App extends React.Component {
         {...unitOptions, ...dateOptions},
         (err, res) => {
           if (err) {
-            console.log('Get distance error: ' + err);
-            return;
+            if (err.message.startsWith('No data available')) {
+              console.log('Error: No distance data available.');
+            } else {
+              console.log('Distance error.');
+            }
+
+            return reject(err);
           }
           resolve(parseFloat(res.value));
         },
@@ -95,8 +104,12 @@ export default class App extends React.Component {
     return new Promise((resolve, reject) => {
       AppleHealthKit.getStepCount(dateOptions, (err, res) => {
         if (err) {
-          console.log('Get step count today error: ' + err);
-          return;
+          if (err.message.startsWith('No data available')) {
+            console.log('Error: No step count data available.');
+          } else {
+            console.log('Step count error.');
+          }
+          return reject(err);
         }
         resolve(parseInt(res.value));
       });
@@ -126,13 +139,42 @@ export default class App extends React.Component {
   }
 
   async calculateWeeklyData() {
-    // Calculate last week's average data
-    for (let i = 1; i < 8; i++) {
-      let date = new Date(new Date() - i);
-      let dateOptions = {
-        date: date.toISOString(),
-      };
-    }
+    return new Promise((resolve, reject) => {
+      // Calculate last week's average data
+      let sumData = {stepCount: 0, distance: 0.0, calories: 0};
+      (async () => {
+        let todayDate = new Date();
+        for (let i = 1; i < 8; i++) {
+          let date = new Date(todayDate.getDate() - i);
+          console.log('Daily Data for date: ' + date.toISOString());
+          let dayData = await this.calculateDailyData(date);
+          sumData.stepCount += dayData.stepCount;
+          sumData.distance += dayData.distance;
+          sumData.calories += dayData.calories;
+          console.log(
+            'Steps: ' +
+              dayData.stepCount +
+              ' Distance: ' +
+              dayData.distance +
+              ' Calories: ' +
+              dayData.calories,
+          );
+        }
+        // Calculate average data
+        sumData.stepCount /= 7;
+        sumData.distance = Number((sumData.distance / 7.0).toFixed(1));
+        sumData.calories /= 7;
+        console.log(
+          'Average data: ' +
+            sumData.stepCount +
+            ' ' +
+            sumData.distance +
+            ' ' +
+            sumData.calories,
+        );
+        resolve(sumData);
+      })();
+    });
   }
 
   async updateTodaysData() {
@@ -149,6 +191,14 @@ export default class App extends React.Component {
 
   async updateWeeklyData() {
     let weeklyData = await this.calculateWeeklyData();
+
+    this.setState({
+      lastWeekData: {
+        stepCount: weeklyData.stepCount,
+        distance: weeklyData.distance,
+        calories: weeklyData.calories,
+      },
+    });
   }
 
   accessButtonPressed() {
@@ -175,7 +225,7 @@ export default class App extends React.Component {
           });
 
           this.updateTodaysData();
-          //this.updateWeeklyData();
+          this.updateWeeklyData();
         },
       );
     }
