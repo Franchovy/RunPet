@@ -137,8 +137,9 @@ export default class App extends React.Component {
         date: date.toISOString(),
       };
       let startDate = new Date(date);
-      startDate.setDate(date.getDate() - 1);
+      startDate.setDate(date.getDate());
       let endDate = new Date(date);
+      endDate.setDate(date.getDate() + 1);
       console.log(
         'Start date: ' +
           startDate.toISOString() +
@@ -357,12 +358,12 @@ export default class App extends React.Component {
                 this.state.todaysData.distance.valueOf() === 1.0
                   ? 'Mile'
                   : 'Miles',
-              percentage:
-                this.roundTo(
-                  this.state.todaysData.distance /
-                    this.state.lastWeekData.distance * 100,
-                  0,
-                ) ,
+              percentage: this.roundTo(
+                (this.state.todaysData.distance /
+                  this.state.lastWeekData.distance) *
+                  100,
+                0,
+              ),
               data: this.state.todaysData.distance,
             },
           ]}
