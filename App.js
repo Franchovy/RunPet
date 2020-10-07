@@ -184,9 +184,9 @@ export default class App extends React.Component {
           );
         }
         // Calculate average data
-        sumData.stepCount = Number((sumData.stepCount / 7).toFixed(0));
-        sumData.distance = Number((sumData.distance / 7.0).toFixed(1));
-        sumData.calories = Number((sumData.calories / 7).toFixed(0));
+        sumData.stepCount = this.roundTo(sumData.stepCount / 7, 0);
+        sumData.distance = this.roundTo(sumData.distance / 7, 1);
+        sumData.calories = this.roundTo(sumData.calories / 7, 0);
         console.log(
           'Average data: ' +
             sumData.stepCount +
@@ -238,6 +238,7 @@ export default class App extends React.Component {
         (error, result) => {
           if (error) {
             console.log('Health Data Access not granted!');
+            this.state.loading = false;
             return;
           }
           this.setState({
@@ -247,8 +248,10 @@ export default class App extends React.Component {
             hasHealthDataAccess: true,
           });
 
-          this.updateTodaysData();
-          this.updateWeeklyData();
+          (async () => {
+            await this.updateTodaysData();
+            await this.updateWeeklyData();
+          })();
         },
       );
     }
@@ -287,7 +290,7 @@ export default class App extends React.Component {
     return (
       <View style={{alignItems: 'center'}}>
         <View style={{margin: 10}}>
-          <Text style={{fontSize: 20}}>Over the last week you averaged:</Text>
+          <Text style={{fontSize: 20}}>Over last week you averaged:</Text>
         </View>
         <DataDisplay
           arr={[
@@ -318,16 +321,22 @@ export default class App extends React.Component {
           ]}
         />
         <View style={{margin: 10}}>
-          <Text style={{fontSize: 20}}>Your scores today:</Text>
+          <Text style={{fontSize: 20}}>Today you've completed:</Text>
         </View>
         <DataDisplay
+          displayPercentage={true}
           arr={[
             {
               name:
                 this.state.todaysData.stepCount.valueOf() === 1
                   ? 'Step'
                   : 'Steps',
-              label: 'per day',
+              percentage:
+                this.roundTo(
+                  this.state.todaysData.stepCount /
+                    this.state.lastWeekData.stepCount,
+                  2,
+                ) * 100,
               data: this.state.todaysData.stepCount,
             },
             {
@@ -335,7 +344,12 @@ export default class App extends React.Component {
                 this.state.todaysData.calories.valueOf() === 1
                   ? 'Calorie'
                   : 'Calories',
-              label: 'per day',
+              percentage:
+                this.roundTo(
+                  this.state.todaysData.calories /
+                    this.state.lastWeekData.calories,
+                  2,
+                ) * 100,
               data: this.state.todaysData.calories,
             },
             {
@@ -343,7 +357,12 @@ export default class App extends React.Component {
                 this.state.todaysData.distance.valueOf() === 1.0
                   ? 'Mile'
                   : 'Miles',
-              label: 'per day',
+              percentage:
+                this.roundTo(
+                  this.state.todaysData.distance /
+                    this.state.lastWeekData.distance * 100,
+                  0,
+                ) ,
               data: this.state.todaysData.distance,
             },
           ]}
@@ -355,6 +374,10 @@ export default class App extends React.Component {
   AWSFormatString(date: Date): String {
     let dateString = date.toISOString();
     return dateString.slice(0, dateString.lastIndexOf('T'));
+  }
+
+  roundTo(number: number, numDecimalPlaces: number): number {
+    return Number(number.toFixed(numDecimalPlaces));
   }
 
   render() {
