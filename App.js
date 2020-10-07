@@ -130,16 +130,24 @@ export default class App extends React.Component {
     });
   }
 
-  async calculateDailyData(dayEnd: Date): Promise {
+  async calculateDailyData(date: Date): Promise {
     return new Promise((resolve, reject) => {
-      let dayStart = new Date();
-      dayStart.setDate(dayEnd.getDate() - 1);
+      date.setHours(0, 0, 0, 0);
       let dateOptionsDay = {
-        date: dayEnd.toISOString(),
+        date: date.toISOString(),
       };
+      let startDate = new Date(date);
+      startDate.setDate(date.getDate() - 1);
+      let endDate = new Date(date);
+      console.log(
+        'Start date: ' +
+          startDate.toISOString() +
+          ' End date: ' +
+          endDate.toISOString(),
+      );
       let dateOptionsPeriod = {
-        startDate: dayStart.toISOString(),
-        endDate: dayEnd.toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
       };
       (async () => {
         // Get step count
@@ -176,9 +184,9 @@ export default class App extends React.Component {
           );
         }
         // Calculate average data
-        sumData.stepCount /= 7;
+        sumData.stepCount = Number((sumData.stepCount / 7).toFixed(0));
         sumData.distance = Number((sumData.distance / 7.0).toFixed(1));
-        sumData.calories /= 7;
+        sumData.calories = Number((sumData.calories / 7).toFixed(0));
         console.log(
           'Average data: ' +
             sumData.stepCount +
