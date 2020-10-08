@@ -1,3 +1,11 @@
 {
-  "api": {}
+  "api": {},
+  "auth": {
+    "runpet8a860d86": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
 }

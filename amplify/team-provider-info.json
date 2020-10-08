@@ -10,6 +10,11 @@
       "StackName": "amplify-runpet-dev-170955",
       "StackId": "arn:aws:cloudformation:us-east-1:791795854462:stack/amplify-runpet-dev-170955/5734a800-04c1-11eb-b608-120fbf0f0187",
       "AmplifyAppId": "dl6v768ewutxq"
+    },
+    "categories": {
+      "auth": {
+        "runpet8a860d86": {}
+      }
     }
   }
 }

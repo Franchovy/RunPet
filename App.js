@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Amplify, {API, graphqlOperation} from 'aws-amplify';
+import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
 import {createData} from './src/graphql/mutations';
