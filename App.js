@@ -28,7 +28,35 @@ import AppleHealthKit from 'rn-apple-healthkit';
 import {RunButton} from './src/RunButton';
 import {DataDisplay} from './src/DataDisplay';
 
-export default class App extends React.Component {
+import {AmplifyTheme} from 'aws-amplify-react';
+
+const authTheme = {
+  ...AmplifyTheme,
+  sectionHeader: {
+    ...AmplifyTheme.sectionHeader,
+    color: 'red',
+  },
+  formSection: {
+    ...AmplifyTheme.formSection,
+    backgroundColor: 'green',
+  },
+  sectionFooter: {
+    ...AmplifyTheme.sectionFooter,
+    backgroundColor: 'purple',
+  },
+  button: {
+    ...AmplifyTheme.button,
+    backgroundColor: 'blue',
+  },
+};
+
+const signUpConfig = {
+  header: 'My Customized Sign Up',
+  hideAllDefaults: true,
+  defaultCountryCode: '44',
+};
+
+class App extends React.Component {
   state = {
     hasHealthDataAccess: false,
     loading: false,
@@ -158,7 +186,11 @@ export default class App extends React.Component {
         let distance = await this.getDistance(dateOptionsDay, {unit: 'mile'});
         // Get Calories burned
         let calories = await this.getCalories(dateOptionsPeriod);
-        resolve({stepCount: stepCount, distance: distance, calories: calories});
+        resolve({
+          stepCount: stepCount,
+          distance: distance,
+          calories: calories,
+        });
       })();
     });
   }
@@ -417,3 +449,11 @@ export default class App extends React.Component {
     );
   }
 }
+
+export default withAuthenticator(
+  App,
+  {
+    signUpConfig: signUpConfig,
+    theme: authTheme,
+  },
+);
