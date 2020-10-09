@@ -22,13 +22,14 @@ import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
 import {createData, createUser} from './src/graphql/mutations';
 import {getData} from './src/graphql/queries';
-
 import AppleHealthKit from 'rn-apple-healthkit';
 
 import {RunButton} from './src/RunButton';
 import {DataDisplay} from './src/DataDisplay';
+import {StoreData} from './src/StoreData';
 
 import {AmplifyTheme} from 'aws-amplify-react';
+import {getID} from './src/StoreData';
 
 const authTheme = {
   ...AmplifyTheme,
@@ -80,6 +81,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
+    let storage = new StoreData();
     this.defaultHealthDataOptions = {
       permissions: {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
@@ -91,13 +93,31 @@ class App extends React.Component {
       let user = await Auth.currentAuthenticatedUser();
       this.username = user.username;
       this.email = user.attributes.email;
-      this.initUser(this.username, this.email);
+
+      let id = await storage.getID();
+      if (id !== null) {
+        this.id = id;
+        console.log('Running with ID: ' + id);
+      } else {
+        console.log('No ID found. Creating new'); //todo check online for email addr.
+        this.initUser(this.username, this.email)
+          .then((result) => {
+            console.log('Uploadied new user with ID: ' + this.id);
+            (async () => {
+              let result = await storage.storeID(this.id);
+              console.log('Stored ID. + ' + JSON.stringify(result));
+            })();
+          })
+          .catch((error) => {
+            alert('Error syncing account!');
+          });
+      }
     })();
 
     // TODO check if health data is already available
   }
 
-  async initUser(username: String, email: String) {
+  async initUser(username: String, email: String): Promise {
     await API.graphql(
       graphqlOperation(createUser, {
         input: {username: 'test_dude', email: 'testdude@bob.com'},
