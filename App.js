@@ -20,7 +20,7 @@ import Amplify, {API, Auth, graphqlOperation} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
-import {createData} from './src/graphql/mutations';
+import {createData, createUser} from './src/graphql/mutations';
 import {getData} from './src/graphql/queries';
 
 import AppleHealthKit from 'rn-apple-healthkit';
@@ -91,10 +91,25 @@ class App extends React.Component {
       let user = await Auth.currentAuthenticatedUser();
       this.username = user.username;
       this.email = user.attributes.email;
-      alert(this.username + " " + this.email);
+      this.initUser(this.username, this.email);
     })();
 
     // TODO check if health data is already available
+  }
+
+  async initUser(username: String, email: String) {
+    await API.graphql(
+      graphqlOperation(createUser, {
+        input: {username: 'test_dude', email: 'testdude@bob.com'},
+      }),
+    )
+      .then((result) => {
+        this.id = result.data.createUser.ID;
+        console.log('New ID: ' + this.id);
+      })
+      .catch((error) => {
+        console.log('Failed to initialise user');
+      });
   }
 
   async getCalories(dateOptionsPeriod): Promise {
@@ -302,10 +317,12 @@ class App extends React.Component {
   async sendDataButtonPressed() {
     this.setState({loading: true});
 
+    return;
+    // eslint-disable-next-line no-unreachable
     await API.graphql(
       graphqlOperation(createData, {
         input: {
-          userid: 'johnny',
+          ID: 'johnny',
           date: this.AWSFormatString(new Date()),
           distance: this.state.todaysData.distance,
           stepCount: this.state.todaysData.stepCount,
@@ -458,10 +475,7 @@ class App extends React.Component {
   }
 }
 
-export default withAuthenticator(
-  App,
-  {
-    signUpConfig: signUpConfig,
-    theme: authTheme,
-  },
-);
+export default withAuthenticator(App, {
+  signUpConfig: signUpConfig,
+  theme: authTheme,
+});

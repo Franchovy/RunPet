@@ -3,70 +3,97 @@
 
 export const onCreateData = /* GraphQL */ `
   subscription OnCreateData(
-    $userid: String
-    $date: AWSDate
-    $stepCount: Int
     $calories: Int
+    $date: AWSDate
     $distance: Float
+    $stepCount: Int
+    $ID: ID
   ) {
     onCreateData(
-      userid: $userid
-      date: $date
-      stepCount: $stepCount
       calories: $calories
+      date: $date
       distance: $distance
+      stepCount: $stepCount
+      ID: $ID
     ) {
-      userid
-      date
-      stepCount
       calories
+      date
       distance
+      stepCount
+      ID
     }
   }
 `;
 export const onUpdateData = /* GraphQL */ `
   subscription OnUpdateData(
-    $userid: String
-    $date: AWSDate
-    $stepCount: Int
     $calories: Int
+    $date: AWSDate
     $distance: Float
+    $stepCount: Int
+    $ID: ID
   ) {
     onUpdateData(
-      userid: $userid
-      date: $date
-      stepCount: $stepCount
       calories: $calories
+      date: $date
       distance: $distance
+      stepCount: $stepCount
+      ID: $ID
     ) {
-      userid
-      date
-      stepCount
       calories
+      date
       distance
+      stepCount
+      ID
     }
   }
 `;
 export const onDeleteData = /* GraphQL */ `
   subscription OnDeleteData(
-    $userid: String
-    $date: AWSDate
-    $stepCount: Int
     $calories: Int
+    $date: AWSDate
     $distance: Float
+    $stepCount: Int
+    $ID: ID
   ) {
     onDeleteData(
-      userid: $userid
-      date: $date
-      stepCount: $stepCount
       calories: $calories
+      date: $date
       distance: $distance
+      stepCount: $stepCount
+      ID: $ID
     ) {
-      userid
-      date
-      stepCount
       calories
+      date
       distance
+      stepCount
+      ID
+    }
+  }
+`;
+export const onCreateUser = /* GraphQL */ `
+  subscription OnCreateUser($ID: ID, $email: AWSEmail, $username: String) {
+    onCreateUser(ID: $ID, email: $email, username: $username) {
+      ID
+      email
+      username
+    }
+  }
+`;
+export const onUpdateUser = /* GraphQL */ `
+  subscription OnUpdateUser($ID: ID, $email: AWSEmail, $username: String) {
+    onUpdateUser(ID: $ID, email: $email, username: $username) {
+      ID
+      email
+      username
+    }
+  }
+`;
+export const onDeleteUser = /* GraphQL */ `
+  subscription OnDeleteUser($ID: ID, $email: AWSEmail, $username: String) {
+    onDeleteUser(ID: $ID, email: $email, username: $username) {
+      ID
+      email
+      username
     }
   }
 `;
