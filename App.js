@@ -81,41 +81,15 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    let storage = new StoreData();
+    this.storage = new StoreData();
     this.defaultHealthDataOptions = {
       permissions: {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
-    // Check if Health data access is granted
-    (async () => {
-      this.state.hasHealthDataAccess = storage.hasHealthDataAccess();
-      // Request permission
-      AppleHealthKit.initHealthKit(
-        this.defaultHealthDataOptions,
-        (error, result) => {
-          if (error) {
-            this.state.hasHealthDataAccess = false;
-            return;
-          }
-          this.getStepCount({})
-            .then((result) => {
-              this.state.hasHealthDataAccess = true;
-            })
-            .catch((error) => {
-              this.state.hasHealthDataAccess = false;
-            });
-        },
-      );
 
-      if (this.state.hasHealthDataAccess) {
-        Alert.alert(
-          'Permissions not granted!',
-          'Please go to settings to allow access to Apple Health.',
-        );
-      }
-      await storage.setHasHealthDataAccess(this.state.hasHealthDataAccess);
-    })();
+    // Check permissions for apple health
+    this.checkHealthDataAccessPrompt();
 
     // Get data about current login session / authenticated user
     (async () => {
@@ -123,7 +97,7 @@ class App extends React.Component {
       this.username = user.username;
       this.email = user.attributes.email;
 
-      let id = await storage.getID();
+      let id = await this.storage.getID();
       if (id !== null) {
         this.id = id;
         console.log('Running with ID: ' + id);
@@ -159,6 +133,47 @@ class App extends React.Component {
       .catch((error) => {
         console.log('Failed to initialise user');
       });
+  }
+
+  async checkHealthDataAccessPrompt() {
+    let healthDataAccessEnabled = this.storage.hasHealthDataAccess();
+    // Check if Health data access is granted
+    // Request permission
+    AppleHealthKit.initHealthKit(
+      this.defaultHealthDataOptions,
+      (error, result) => {
+        if (error) {
+          healthDataAccessEnabled = false;
+        }
+        if (healthDataAccessEnabled) {
+          this.getStepCount({})
+            .then((result) => {
+              healthDataAccessEnabled = true;
+            })
+            .catch((error) => {
+              healthDataAccessEnabled = false;
+            });
+        }
+      },
+    );
+
+    if (!healthDataAccessEnabled) {
+      Alert.alert(
+        'Permissions not granted!',
+        'Please go to settings to allow access to Apple Health.',
+      );
+    }
+    await this.storage
+      .setHasHealthDataAccess(healthDataAccessEnabled)
+      .then(() => {
+        console.log('Saved healthDataAccess value: ' + healthDataAccessEnabled);
+      })
+      .catch((error) => {
+        console.log('error writing to storage!');
+      });
+    this.setState({
+      hasHealthDataAccess: healthDataAccessEnabled,
+    });
   }
 
   async getCalories(dateOptionsPeriod): Promise {
@@ -332,35 +347,37 @@ class App extends React.Component {
 
   accessButtonPressed() {
     if (!this.state.hasHealthDataAccess) {
-      this.setState({
-        accessButtonText: 'Missing access - Please change settings',
-        accessButtonDisabled: false,
-        sendDataButtonDisabled: true,
-        hasHealthDataAccess: false,
-      });
-
-      AppleHealthKit.initHealthKit(
-        this.defaultHealthDataOptions,
-        (error, result) => {
-          if (error) {
-            console.log('Health Data Access not granted!');
-            this.state.loading = false;
-            return;
-          }
-          this.setState({
-            accessButtonText: 'Access granted, Thank you.',
-            accessButtonDisabled: true,
-            sendDataButtonDisabled: false,
-            hasHealthDataAccess: true,
-          });
-
-          (async () => {
-            await this.updateTodaysData();
-            await this.updateWeeklyData();
-          })();
-        },
-      );
+      this.checkHealthDataAccessPrompt();
     }
+    this.setState({
+      accessButtonText: 'Missing access - Please change settings',
+      accessButtonDisabled: false,
+      sendDataButtonDisabled: true,
+      hasHealthDataAccess: false,
+    });
+
+    AppleHealthKit.initHealthKit(
+      this.defaultHealthDataOptions,
+      (error, result) => {
+        if (error) {
+          console.log('Health Data Access not granted!');
+          this.state.loading = false;
+          return;
+        }
+        this.setState({
+          accessButtonText: 'Access granted, Thank you.',
+          accessButtonDisabled: true,
+          sendDataButtonDisabled: false,
+          hasHealthDataAccess: true,
+        });
+
+        (async () => {
+          await this.updateTodaysData();
+          await this.updateWeeklyData();
+        })();
+      },
+    );
+
   }
 
   async sendDataButtonPressed() {
@@ -502,22 +519,28 @@ class App extends React.Component {
           <Text style={{fontSize: 40, fontWeight: 'bold', marginBottom: 50}}>
             RunPet
           </Text>
-          <RunButton
-            buttonText={this.state.accessButtonText}
-            disabled={this.state.accessButtonDisabled}
-            onPress={() => this.accessButtonPressed()}
-          />
-          <RunButton
-            buttonText={this.state.sendDataButtonText}
-            disabled={this.state.sendDataButtonDisabled}
-            onPress={() => this.sendDataButtonPressed()}
-          />
-          <ActivityIndicator
-            animating={this.state.loading}
-            style={{marginBottom: 10}}
-          />
-
-          {this.displayData()}
+          {! this.state.hasHealthDataAccess ? (
+            <View>
+              <RunButton
+                buttonText={this.state.accessButtonText}
+                disabled={this.state.accessButtonDisabled}
+                onPress={() => this.accessButtonPressed()}
+              />
+            </View>
+          ) : (
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
+              <RunButton
+                buttonText={this.state.sendDataButtonText}
+                disabled={this.state.sendDataButtonDisabled}
+                onPress={() => this.sendDataButtonPressed()}
+              />
+              <ActivityIndicator
+                animating={this.state.loading}
+                style={{marginBottom: 10}}
+              />
+              {this.displayData()}
+            </View>
+          )}
         </View>
       </>
     );
