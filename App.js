@@ -87,6 +87,35 @@ class App extends React.Component {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
+    // Check if Health data access is granted
+    (async () => {
+      this.state.hasHealthDataAccess = storage.hasHealthDataAccess();
+      // Request permission
+      AppleHealthKit.initHealthKit(
+        this.defaultHealthDataOptions,
+        (error, result) => {
+          if (error) {
+            this.state.hasHealthDataAccess = false;
+            return;
+          }
+          this.getStepCount({})
+            .then((result) => {
+              this.state.hasHealthDataAccess = true;
+            })
+            .catch((error) => {
+              this.state.hasHealthDataAccess = false;
+            });
+        },
+      );
+
+      if (this.state.hasHealthDataAccess) {
+        Alert.alert(
+          'Permissions not granted!',
+          'Please go to settings to allow access to Apple Health.',
+        );
+      }
+      await storage.setHasHealthDataAccess(this.state.hasHealthDataAccess);
+    })();
 
     // Get data about current login session / authenticated user
     (async () => {
@@ -102,7 +131,7 @@ class App extends React.Component {
         console.log('No ID found. Creating new'); //todo check online for email addr.
         this.initUser(this.username, this.email)
           .then((result) => {
-            console.log('Uploadied new user with ID: ' + this.id);
+            console.log('Uploaded new user with ID: ' + this.id);
             (async () => {
               let result = await storage.storeID(this.id);
               console.log('Stored ID. + ' + JSON.stringify(result));
