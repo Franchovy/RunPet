@@ -16,7 +16,7 @@ import {
   Text,
   ActivityIndicator,
 } from 'react-native';
-import Amplify, {API, graphqlOperation} from 'aws-amplify';
+import Amplify, {API, Auth, graphqlOperation} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
@@ -85,6 +85,14 @@ class App extends React.Component {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
+
+    // Get data about current login session / authenticated user
+    (async () => {
+      let user = await Auth.currentAuthenticatedUser();
+      this.username = user.username;
+      this.email = user.attributes.email;
+      alert(this.username + " " + this.email);
+    })();
 
     // TODO check if health data is already available
   }
