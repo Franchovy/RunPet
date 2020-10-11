@@ -60,7 +60,7 @@ const signUpConfig = {
 class App extends React.Component {
   state = {
     hasHealthDataAccess: false,
-    loading: false,
+    loading: true,
     accessButtonDisabled: false,
     accessButtonText: 'Check for Health Data Access',
     sendDataButtonDisabled: true,
@@ -112,7 +112,7 @@ class App extends React.Component {
         }
       } else {
         console.log('No ID found. Creating new'); //todo check online for email addr.
-        this.initUser(this.username, this.email)
+        await this.initUser(this.username, this.email)
           .then((result) => {
             console.log('Uploaded new user with ID: ' + this.id);
             (async () => {
@@ -128,42 +128,38 @@ class App extends React.Component {
       // Get data for the previous week
       let todayDate = new Date();
       for (let i = 1; i < 8; i++) {
-        await (async () => {
-          let date = new Date();
-          date.setDate(todayDate.getDate() - i);
+        let date = new Date();
+        date.setDate(todayDate.getDate() - i);
 
-          API.graphql(
-            graphqlOperation(getData, {
-              ID: this.id,
-              date: this.AWSFormatString(todayDate),
-            }),
-          )
-            .then((result) => {
-              (async () => {
-                if (result.data.getData === null) {
-                  console.log(
-                    'Uploading data for day: ' + ' : ' + JSON.stringify(result),
-                  );
-                  await this.uploadDataForDate(date);
-                } else {
-                  console.log(
-                    'Data for day: ' + ' : ' + JSON.stringify(result),
-                  );
-                }
-              })();
-            })
-            .catch((error) => {
-              (async () => {
-                if (Object.keys(error).length === 0) {
-                  await this.uploadDataForDate(date);
-                } else {
-                  console.error(
-                    'Error checking data: ' + JSON.stringify(error),
-                  );
-                }
-              })();
-            });
-        })();
+        API.graphql(
+          graphqlOperation(getData, {
+            ID: this.id,
+            date: this.AWSFormatString(todayDate),
+          }),
+        )
+          .then((result) => {
+            (async () => {
+              if (result.data.getData === null) {
+                console.log(
+                  'Uploading data for day: ' + ' : ' + JSON.stringify(result),
+                );
+                await this.uploadDataForDate(date);
+              } else {
+                console.log('Data for day: ' + ' : ' + JSON.stringify(result));
+              }
+            })();
+          })
+          .catch((error) => {
+            (async () => {
+              if (Object.keys(error).length === 0) {
+                await this.uploadDataForDate(date);
+              } else {
+                console.error(
+                  'Error checking data: ' + JSON.stringify(error),
+                );
+              }
+            })();
+          });
       }
 
       // Load health data for previous week
@@ -515,6 +511,7 @@ class App extends React.Component {
         (async () => {
           await this.updateTodaysData();
           await this.updateWeeklyData();
+          this.setState({loading: false});
         })();
       },
     );
@@ -667,11 +664,6 @@ class App extends React.Component {
             </View>
           ) : (
             <View style={{alignItems: 'center', justifyContent: 'center'}}>
-              <RunButton
-                buttonText={this.state.sendDataButtonText}
-                disabled={this.state.sendDataButtonDisabled}
-                onPress={() => this.sendDataButtonPressed()}
-              />
               <ActivityIndicator
                 animating={this.state.loading}
                 style={{marginBottom: 10}}
