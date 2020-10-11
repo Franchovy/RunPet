@@ -21,7 +21,7 @@ import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
 import {createData, createUser} from './src/graphql/mutations';
-import {getData} from './src/graphql/queries';
+import {getData, getUser} from './src/graphql/queries';
 import AppleHealthKit from 'rn-apple-healthkit';
 
 import {RunButton} from './src/RunButton';
@@ -99,15 +99,21 @@ class App extends React.Component {
 
       let id = await this.storage.getID();
       if (id !== null) {
-        this.id = id;
-        console.log('Running with ID: ' + id);
+        this.id = await this.checkID(id, this.username, this.email);
+        if (this.id !== id) {
+          // Save new ID
+          await (async () => {
+            let result = await this.storage.storeID(this.id);
+            console.log('Stored ID. + ' + JSON.stringify(result));
+          })();
+        }
       } else {
         console.log('No ID found. Creating new'); //todo check online for email addr.
         this.initUser(this.username, this.email)
           .then((result) => {
             console.log('Uploaded new user with ID: ' + this.id);
             (async () => {
-              let result = await storage.storeID(this.id);
+              let result = await this.storage.storeID(this.id);
               console.log('Stored ID. + ' + JSON.stringify(result));
             })();
           })
@@ -127,7 +133,7 @@ class App extends React.Component {
   async initUser(username: String, email: String): Promise {
     await API.graphql(
       graphqlOperation(createUser, {
-        input: {username: 'test_dude', email: 'testdude@bob.com'},
+        input: {username: username, email: email},
       }),
     )
       .then((result) => {
@@ -137,6 +143,60 @@ class App extends React.Component {
       .catch((error) => {
         console.log('Failed to initialise user');
       });
+  }
+
+  /**
+   * Checks for user online - if there isn't one it creates anew.
+   * @param id ID to check whether present
+   * @param username that is used with cognito account
+   * @param email that is used with cognito account
+   * @returns Promise containing ID, new ID or error upon creation.
+   */
+  async checkID(id: String, username: String, email: String) {
+    return new Promise((resolve, reject) => {
+      API.graphql(
+        graphqlOperation(getUser, {
+          ID: id,
+        }),
+      )
+        .then((result) => {
+          if (
+            result.data.getUser.email === email &&
+            result.data.getUser.username === username
+          ) {
+            console.log('Confirmed account on cloud.');
+            resolve(id);
+            return;
+          }
+          reject('ID mismatching!');
+        })
+        .catch((error) => {
+          if (Object.keys(error).length !== 0) {
+            // Error fetching data
+            console.error('ERROR: ID unconfirmed');
+            console.error(JSON.stringify(error));
+            reject('Could not confirm ID');
+          } else {
+            // Create account on cloud
+            console.log('Creating new user');
+            (async () => {
+              await API.graphql(
+                graphqlOperation(createUser, {
+                  input: {ID: id, username: username, email: email},
+                }),
+              )
+                .then((result) => {
+                  console.log('NEW ACCOUNT CREATED: ' + JSON.stringify(result));
+                  resolve(result.data.createUser.ID);
+                })
+                .catch((error) => {
+                  console.log("COULDN'T CREATE NEW ACCOUNT");
+                  reject('Could not create new account');
+                });
+            })();
+          }
+        });
+    });
   }
 
   async checkHealthDataAccessPrompt() {
@@ -383,18 +443,15 @@ class App extends React.Component {
         })();
       },
     );
-
   }
 
   async sendDataButtonPressed() {
     this.setState({loading: true});
 
-    return;
-    // eslint-disable-next-line no-unreachable
     await API.graphql(
       graphqlOperation(createData, {
         input: {
-          ID: 'johnny',
+          ID: this.id,
           date: this.AWSFormatString(new Date()),
           distance: this.state.todaysData.distance,
           stepCount: this.state.todaysData.stepCount,
