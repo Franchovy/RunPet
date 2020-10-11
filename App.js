@@ -9,9 +9,8 @@
 import React from 'react';
 import {
   Alert,
-  Button,
+  Image,
   View,
-  StyleSheet,
   StatusBar,
   Text,
   ActivityIndicator,
@@ -651,6 +650,10 @@ class App extends React.Component {
             alignItems: 'center',
             flexDirection: 'column',
           }}>
+          <Image
+            style={{resizeMode: 'contain', width: 150, height: 150}}
+            source={require('./resources/image.png')}
+          />
           <Text style={{fontSize: 40, fontWeight: 'bold', marginBottom: 50}}>
             RunPet
           </Text>
