@@ -126,7 +126,45 @@ class App extends React.Component {
       }
 
       // Get data for the previous week
-      // upload the data
+      let todayDate = new Date();
+      for (let i = 1; i < 8; i++) {
+        await (async () => {
+          let date = new Date();
+          date.setDate(todayDate.getDate() - i);
+
+          API.graphql(
+            graphqlOperation(getData, {
+              ID: this.id,
+              date: this.AWSFormatString(todayDate),
+            }),
+          )
+            .then((result) => {
+              (async () => {
+                if (result.data.getData === null) {
+                  console.log(
+                    'Uploading data for day: ' + ' : ' + JSON.stringify(result),
+                  );
+                  await this.uploadDataForDate(date);
+                } else {
+                  console.log(
+                    'Data for day: ' + ' : ' + JSON.stringify(result),
+                  );
+                }
+              })();
+            })
+            .catch((error) => {
+              (async () => {
+                if (Object.keys(error).length === 0) {
+                  await this.uploadDataForDate(date);
+                } else {
+                  console.error(
+                    'Error checking data: ' + JSON.stringify(error),
+                  );
+                }
+              })();
+            });
+        })();
+      }
 
       // Load health data for previous week
       if (this.state.hasHealthDataAccess) {
@@ -203,6 +241,31 @@ class App extends React.Component {
           }
         });
     });
+  }
+
+  async uploadDataForDate(date: Date) {
+    console.log('No data for day: ' + date + ', uploading data.');
+    let dayData = await this.calculateDailyData(date);
+
+    API.graphql(
+      graphqlOperation(createData, {
+        input: {
+          ID: this.id,
+          date: this.AWSFormatString(date),
+          stepCount: dayData.stepCount,
+          distance: dayData.distance,
+          calories: dayData.calories,
+        },
+      }),
+    )
+      .then((result) => {
+        console.log('Successfully uploaded data for ' + date);
+      })
+      .catch((error) => {
+        console.log(
+          'Error uploading data for ' + date + ': ' + JSON.stringify(error),
+        );
+      });
   }
 
   async checkHealthDataAccessPrompt() {
