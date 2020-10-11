@@ -97,6 +97,7 @@ class App extends React.Component {
       this.username = user.username;
       this.email = user.attributes.email;
 
+      // Check ID already stored if there is one
       let id = await this.storage.getID();
       if (id !== null) {
         this.id = await this.checkID(id, this.username, this.email);
@@ -106,6 +107,8 @@ class App extends React.Component {
             let result = await this.storage.storeID(this.id);
             console.log('Stored ID. + ' + JSON.stringify(result));
           })();
+        } else {
+          console.log('Using ID: ' + id);
         }
       } else {
         console.log('No ID found. Creating new'); //todo check online for email addr.
@@ -121,6 +124,9 @@ class App extends React.Component {
             alert('Error syncing account!');
           });
       }
+
+      // Get data for the previous week
+      // upload the data
 
       // Load health data for previous week
       if (this.state.hasHealthDataAccess) {
@@ -348,7 +354,7 @@ class App extends React.Component {
     });
   }
 
-  async calculateWeeklyData() {
+  async calculateAverageWeeklyData() {
     return new Promise((resolve, reject) => {
       // Calculate last week's average data
       let sumData = {stepCount: 0, distance: 0.0, calories: 0};
@@ -400,27 +406,33 @@ class App extends React.Component {
   }
 
   async updateWeeklyData() {
-    let weeklyData = await this.calculateWeeklyData();
+    let averageWeeklyData = await this.calculateAverageWeeklyData();
 
     this.setState({
       lastWeekData: {
-        stepCount: weeklyData.stepCount,
-        distance: weeklyData.distance,
-        calories: weeklyData.calories,
+        stepCount: averageWeeklyData.stepCount,
+        distance: averageWeeklyData.distance,
+        calories: averageWeeklyData.calories,
       },
     });
   }
 
   accessButtonPressed() {
     if (!this.state.hasHealthDataAccess) {
-      this.checkHealthDataAccessPrompt();
+      this.checkHealthDataAccessPrompt().catch((error) => {
+        this.setState({
+          accessButtonText: 'Missing access - Please change settings',
+          accessButtonDisabled: false,
+          sendDataButtonDisabled: true,
+          hasHealthDataAccess: false,
+        });
+        console.warn(JSON.stringify(error));
+      });
+      if (!this.state.hasHealthDataAccess) {
+        console.log('No health access.');
+        return;
+      }
     }
-    this.setState({
-      accessButtonText: 'Missing access - Please change settings',
-      accessButtonDisabled: false,
-      sendDataButtonDisabled: true,
-      hasHealthDataAccess: false,
-    });
 
     AppleHealthKit.initHealthKit(
       this.defaultHealthDataOptions,
