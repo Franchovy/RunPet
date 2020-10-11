@@ -88,11 +88,11 @@ class App extends React.Component {
       },
     };
 
-    // Check permissions for apple health
-    this.checkHealthDataAccessPrompt();
-
-    // Get data about current login session / authenticated user
     (async () => {
+      // Check permissions for apple health
+      await this.checkHealthDataAccessPrompt();
+
+      // Get data about current login session / authenticated user
       let user = await Auth.currentAuthenticatedUser();
       this.username = user.username;
       this.email = user.attributes.email;
@@ -115,9 +115,13 @@ class App extends React.Component {
             alert('Error syncing account!');
           });
       }
-    })();
 
-    // TODO check if health data is already available
+      // Load health data for previous week
+      if (this.state.hasHealthDataAccess) {
+        console.log('Access button pressed');
+        this.accessButtonPressed();
+      }
+    })();
   }
 
   async initUser(username: String, email: String): Promise {
@@ -162,6 +166,8 @@ class App extends React.Component {
         'Permissions not granted!',
         'Please go to settings to allow access to Apple Health.',
       );
+    } else {
+      console.log('Health Data Access enabled');
     }
     await this.storage
       .setHasHealthDataAccess(healthDataAccessEnabled)
@@ -519,7 +525,7 @@ class App extends React.Component {
           <Text style={{fontSize: 40, fontWeight: 'bold', marginBottom: 50}}>
             RunPet
           </Text>
-          {! this.state.hasHealthDataAccess ? (
+          {!this.state.hasHealthDataAccess ? (
             <View>
               <RunButton
                 buttonText={this.state.accessButtonText}
