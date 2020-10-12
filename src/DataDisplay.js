@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Text, View} from 'react-native';
+import {Button, PixelRatio, Text, View} from 'react-native';
 
 export class DataDisplay extends React.Component {
   getPercentColor(percentage: number): any {
@@ -24,26 +24,26 @@ export class DataDisplay extends React.Component {
         <View
           key={item.name}
           style={{
-            marginBottom: 15,
+            marginBottom: PixelRatio.getPixelSizeForLayoutSize(7),
             marginHorizontal: 10,
             alignItems: 'center',
           }}>
-          <Text style={{fontSize: 30, fontWeight: 'bold', marginBottom: 5}}>
+          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(15), fontWeight: 'bold', marginBottom: PixelRatio.getPixelSizeForLayoutSize(2)}}>
             {item.data}
           </Text>
-          <Text style={{fontSize: 25, fontWeight: 'bold', marginBottom: 5}}>
+          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(12), fontWeight: 'bold', marginBottom: PixelRatio.getPixelSizeForLayoutSize(2)}}>
             {item.name}
           </Text>
-          <Text style={{fontSize: 14}}>{item.label}</Text>
+          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(7)}}>{item.label}</Text>
           <Text
             style={[
-              {fontSize: 25, fontWeight: 'bold', marginBottom: 5},
+              {fontSize: PixelRatio.getPixelSizeForLayoutSize(13), fontWeight: 'bold', marginBottom: 5},
               this.getPercentColor(item.percentage),
             ]}>
             {item.percentage}
             {item.percentage ? '%' : ''}
           </Text>
-          <Text style={{fontSize: 14}}>{item.percentage ? 'of today\'s ' + item.name : ''}</Text>
+          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(7)}}>{item.percentage ? 'of today\'s ' + item.name : ''}</Text>
         </View>
       );
     });
@@ -54,7 +54,7 @@ export class DataDisplay extends React.Component {
       <View
         style={{
           flexDirection: 'row',
-          padding: 10,
+          padding: PixelRatio.getPixelSizeForLayoutSize(5),
         }}>
         {this.renderData()}
       </View>

@@ -13,6 +13,7 @@ import {
   View,
   StatusBar,
   Text,
+  PixelRatio,
   ActivityIndicator,
 } from 'react-native';
 import Amplify, {API, Auth, graphqlOperation} from 'aws-amplify';
@@ -60,7 +61,7 @@ class App extends React.Component {
   state = {
     hasHealthDataAccess: false,
     loading: true,
-    accessButtonDisabled: false,
+    displayAccessHealthDataButton: false,
     accessButtonText: 'Check for Health Data Access',
     sendDataButtonDisabled: true,
     sendDataButtonText: 'Update Data',
@@ -88,9 +89,6 @@ class App extends React.Component {
     };
 
     (async () => {
-      // Check permissions for apple health
-      await this.checkHealthDataAccessPrompt();
-
       // Get data about current login session / authenticated user
       let user = await Auth.currentAuthenticatedUser();
       this.username = user.username;
@@ -124,47 +122,56 @@ class App extends React.Component {
           });
       }
 
-      // Get data for the previous week
-      let todayDate = new Date();
-      for (let i = 1; i < 8; i++) {
-        let date = new Date();
-        date.setDate(todayDate.getDate() - i);
+      // Check if access had previously been granted
+      if (this.storage.hasHealthDataAccess()) {
+        // Check permissions for apple health
+        await this.checkHealthDataAccessPrompt();
 
-        API.graphql(
-          graphqlOperation(getData, {
-            ID: this.id,
-            date: this.AWSFormatString(todayDate),
-          }),
-        )
-          .then((result) => {
-            (async () => {
-              if (result.data.getData === null) {
-                console.log(
-                  'Uploading data for day: ' + ' : ' + JSON.stringify(result),
-                );
-                await this.uploadDataForDate(date);
-              } else {
-                console.log('Data for day: ' + ' : ' + JSON.stringify(result));
-              }
-            })();
-          })
-          .catch((error) => {
-            (async () => {
-              if (Object.keys(error).length === 0) {
-                await this.uploadDataForDate(date);
-              } else {
-                console.error(
-                  'Error checking data: ' + JSON.stringify(error),
-                );
-              }
-            })();
-          });
-      }
+        // Get data for the previous week
+        let todayDate = new Date();
+        for (let i = 1; i < 8; i++) {
+          let date = new Date();
+          date.setDate(todayDate.getDate() - i);
 
-      // Load health data for previous week
-      if (this.state.hasHealthDataAccess) {
-        console.log('Access button pressed');
-        this.accessButtonPressed();
+          API.graphql(
+            graphqlOperation(getData, {
+              ID: this.id,
+              date: this.AWSFormatString(todayDate),
+            }),
+          )
+            .then((result) => {
+              (async () => {
+                if (result.data.getData === null) {
+                  console.log(
+                    'Uploading data for day: ' + ' : ' + JSON.stringify(result),
+                  );
+                  await this.uploadDataForDate(date);
+                } else {
+                  console.log('Data for day: ' + ' : ' + JSON.stringify(result));
+                }
+              })();
+            })
+            .catch((error) => {
+              (async () => {
+                if (Object.keys(error).length === 0) {
+                  await this.uploadDataForDate(date);
+                } else {
+                  console.error(
+                    'Error checking data: ' + JSON.stringify(error),
+                  );
+                }
+              })();
+            });
+        }
+
+        // Load health data for previous week
+        if (this.state.hasHealthDataAccess) {
+          console.log('Access button pressed');
+          this.accessButtonPressed();
+        }
+      } else {
+        // Display access health data button if no access currently
+        this.setState({displayAccessHealthDataButton: false});
       }
     })();
   }
@@ -510,7 +517,7 @@ class App extends React.Component {
         (async () => {
           await this.updateTodaysData();
           await this.updateWeeklyData();
-          this.setState({loading: false});
+          this.setState({loading: false, displayAccessHealthDataButton: false});
         })();
       },
     );
@@ -651,13 +658,23 @@ class App extends React.Component {
             flexDirection: 'column',
           }}>
           <Image
-            style={{resizeMode: 'contain', width: 150, height: 150}}
+            style={{
+              resizeMode: 'contain',
+              width: '30%',
+              height: '30%',
+              marginBottom: '0%',
+            }}
             source={require('./resources/image.png')}
           />
-          <Text style={{fontSize: 40, fontWeight: 'bold', marginBottom: 50}}>
+          <Text
+            style={{
+              fontSize: PixelRatio.getPixelSizeForLayoutSize(20),
+              fontWeight: 'bold',
+              marginBottom: PixelRatio.getPixelSizeForLayoutSize(20),
+            }}>
             RunPet
           </Text>
-          {!this.state.hasHealthDataAccess ? (
+          {!this.state.displayAccessHealthDataButton ? (
             <View>
               <RunButton
                 buttonText={this.state.accessButtonText}
@@ -666,13 +683,18 @@ class App extends React.Component {
               />
             </View>
           ) : (
+            <Text style={{color: 'red'}}>No access to health data.</Text>
+          )}
+          {this.state.hasHealthDataAccess ? (
             <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <ActivityIndicator
                 animating={this.state.loading}
-                style={{marginBottom: 10}}
+                style={{marginBottom: PixelRatio.getPixelSizeForLayoutSize(5)}}
               />
               {this.displayData()}
             </View>
+          ) : (
+            <></>
           )}
         </View>
       </>

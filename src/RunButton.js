@@ -1,6 +1,6 @@
 import React from 'react';
 import AppleHealthKit from 'rn-apple-healthkit';
-import {Button, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Button, PixelRatio, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 export class RunButton extends React.Component {
   render() {
@@ -29,8 +29,8 @@ export class RunButton extends React.Component {
 
 const styles = StyleSheet.create({
   button: {
-    width: 300,
-    height: 50,
+    width: PixelRatio.getPixelSizeForLayoutSize(150),
+    height: PixelRatio.getPixelSizeForLayoutSize(25),
     marginBottom: 10,
     borderRadius: 5,
     borderWidth: 1,
