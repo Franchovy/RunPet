@@ -227,7 +227,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = 5P66QD2YKU;
+						DevelopmentTeam = Z9R45SX78W;
 						LastSwiftMigration = 1120;
 					};
 				};
@@ -466,7 +466,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = RunPet/RunPet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5P66QD2YKU;
+				DEVELOPMENT_TEAM = Z9R45SX78W;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = RunPet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
@@ -476,7 +476,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = uk.co.RunPet.RunPet;
+				PRODUCT_BUNDLE_IDENTIFIER = com.RunPet.RunPet;
 				PRODUCT_NAME = RunPet;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -492,7 +492,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = RunPet/RunPet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5P66QD2YKU;
+				DEVELOPMENT_TEAM = Z9R45SX78W;
 				INFOPLIST_FILE = RunPet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -501,7 +501,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = uk.co.RunPet.RunPet;
+				PRODUCT_BUNDLE_IDENTIFIER = com.RunPet.RunPet;
 				PRODUCT_NAME = RunPet;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

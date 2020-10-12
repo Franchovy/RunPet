@@ -30,12 +30,3 @@ target 'RunPet' do
       end
   end
 end
-
-target 'RunPet-tvOS' do
-  # Pods for RunPet-tvOS
-
-  target 'RunPet-tvOSTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-end
