@@ -9,6 +9,7 @@
 import React from 'react';
 import {
   Alert,
+  Dimensions,
   Image,
   View,
   StatusBar,
@@ -20,6 +21,7 @@ import Amplify, {API, Auth, graphqlOperation} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
+import EStyleSheet from 'react-native-extended-stylesheet';
 import {createData, createUser} from './src/graphql/mutations';
 import {getData, getUser} from './src/graphql/queries';
 import AppleHealthKit from 'rn-apple-healthkit';
@@ -51,6 +53,10 @@ const authTheme = {
   },
 };
 
+const {width} = Dimensions.get('window');
+const rem = width / 45;
+console.log(rem);
+
 const signUpConfig = {
   header: 'My Customized Sign Up',
   hideAllDefaults: true,
@@ -80,6 +86,10 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
+
+    EStyleSheet.build({ // always call EStyleSheet.build() even if you don't use global variables!
+      $rem: rem,
+    });
 
     this.storage = new StoreData();
     this.defaultHealthDataOptions = {
@@ -556,7 +566,7 @@ class App extends React.Component {
     return (
       <View style={{alignItems: 'center'}}>
         <View style={{margin: 10}}>
-          <Text style={{fontSize: 20}}>Over last week you averaged:</Text>
+          <Text style={styles.dataDisplayText}>Over last week you averaged:</Text>
         </View>
         <DataDisplay
           arr={[
@@ -582,12 +592,12 @@ class App extends React.Component {
                   ? 'Mile'
                   : 'Miles',
               label: 'per day',
-              data: this.state.lastWeekData.distance,
+              data: this.roundTo(this.state.lastWeekData.distance, 1),
             },
           ]}
         />
         <View style={{margin: 10}}>
-          <Text style={{fontSize: 20}}>Today you've completed:</Text>
+          <Text style={styles.dataDisplayText}>Today you've completed:</Text>
         </View>
         <DataDisplay
           displayPercentage={true}
@@ -629,7 +639,7 @@ class App extends React.Component {
                   100,
                 0,
               ),
-              data: this.state.todaysData.distance,
+              data: this.roundTo(this.state.todaysData.distance, 1),
             },
           ]}
         />
@@ -662,19 +672,11 @@ class App extends React.Component {
               resizeMode: 'contain',
               width: '30%',
               height: '30%',
-              marginBottom: '0%',
             }}
             source={require('./resources/image.png')}
           />
-          <Text
-            style={{
-              fontSize: PixelRatio.getPixelSizeForLayoutSize(20),
-              fontWeight: 'bold',
-              marginBottom: PixelRatio.getPixelSizeForLayoutSize(20),
-            }}>
-            RunPet
-          </Text>
-          {!this.state.displayAccessHealthDataButton ? (
+          <Text style={styles.titleText}>RunPet</Text>
+          {this.state.displayAccessHealthDataButton ? (
             <View>
               <RunButton
                 buttonText={this.state.accessButtonText}
@@ -683,7 +685,7 @@ class App extends React.Component {
               />
             </View>
           ) : (
-            <Text style={{color: 'red'}}>No access to health data.</Text>
+            <></>
           )}
           {this.state.hasHealthDataAccess ? (
             <View style={{alignItems: 'center', justifyContent: 'center'}}>
@@ -705,4 +707,14 @@ class App extends React.Component {
 export default withAuthenticator(App, {
   signUpConfig: signUpConfig,
   theme: authTheme,
+});
+
+const styles = EStyleSheet.create({
+  titleText: {
+    fontSize: '5.5rem',
+    fontWeight: 'bold',
+  },
+  dataDisplayText: {
+    fontSize: '2.0rem',
+  },
 });

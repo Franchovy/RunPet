@@ -1,5 +1,6 @@
 import React from 'react';
 import {Button, PixelRatio, Text, View} from 'react-native';
+import EStyleSheet from 'react-native-extended-stylesheet';
 
 export class DataDisplay extends React.Component {
   getPercentColor(percentage: number): any {
@@ -24,26 +25,27 @@ export class DataDisplay extends React.Component {
         <View
           key={item.name}
           style={{
-            marginBottom: PixelRatio.getPixelSizeForLayoutSize(7),
-            marginHorizontal: 10,
+            width: '35%',
+            justifyContent: 'space-between',
+            marginBottom: '1%',
             alignItems: 'center',
           }}>
-          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(15), fontWeight: 'bold', marginBottom: PixelRatio.getPixelSizeForLayoutSize(2)}}>
+          <Text style={styles.textData}>
             {item.data}
           </Text>
-          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(12), fontWeight: 'bold', marginBottom: PixelRatio.getPixelSizeForLayoutSize(2)}}>
+          <Text style={styles.textLabel}>
             {item.name}
           </Text>
-          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(7)}}>{item.label}</Text>
+          <Text style={styles.textSubText}>{item.label}</Text>
           <Text
             style={[
-              {fontSize: PixelRatio.getPixelSizeForLayoutSize(13), fontWeight: 'bold', marginBottom: 5},
+              styles.textPercentage,
               this.getPercentColor(item.percentage),
             ]}>
             {item.percentage}
             {item.percentage ? '%' : ''}
           </Text>
-          <Text style={{fontSize: PixelRatio.getPixelSizeForLayoutSize(7)}}>{item.percentage ? 'of today\'s ' + item.name : ''}</Text>
+          <Text style={styles.textSubText}>{item.percentage ? 'of today\'s ' + item.name : ''}</Text>
         </View>
       );
     });
@@ -54,10 +56,32 @@ export class DataDisplay extends React.Component {
       <View
         style={{
           flexDirection: 'row',
-          padding: PixelRatio.getPixelSizeForLayoutSize(5),
+          padding: '1%',
+          alignItems: 'flex-start',
         }}>
         {this.renderData()}
       </View>
     );
   }
 }
+
+const styles = EStyleSheet.create({
+  textPercentage: {
+    fontSize: '4.0rem',
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  textSubText: {
+    fontSize: '1.5rem',
+  },
+  textLabel: {
+    fontSize: '2.5rem',
+    fontWeight: 'bold',
+    marginBottom: PixelRatio.getPixelSizeForLayoutSize(2),
+  },
+  textData: {
+    fontSize: '3.5rem',
+    fontWeight: 'bold',
+    marginBottom: PixelRatio.getPixelSizeForLayoutSize(2),
+  }
+});
