@@ -493,6 +493,7 @@
 				CODE_SIGN_ENTITLEMENTS = RunPet/RunPet.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Z9R45SX78W;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = RunPet/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
