@@ -21,6 +21,7 @@ import Amplify, {API, Auth, graphqlOperation} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
+
 import EStyleSheet from 'react-native-extended-stylesheet';
 import {createData, createUser} from './src/graphql/mutations';
 import {getData, getUser} from './src/graphql/queries';
@@ -31,7 +32,6 @@ import {DataDisplay} from './src/DataDisplay';
 import {StoreData} from './src/StoreData';
 
 import {AmplifyTheme} from 'aws-amplify-react';
-import {getID} from './src/StoreData';
 
 const authTheme = {
   ...AmplifyTheme,
@@ -87,7 +87,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    EStyleSheet.build({ // always call EStyleSheet.build() even if you don't use global variables!
+    EStyleSheet.build({
+      // always call EStyleSheet.build() even if you don't use global variables!
       $rem: rem,
     });
 
@@ -118,9 +119,10 @@ class App extends React.Component {
           console.log('Using ID: ' + id);
         }
       } else {
-        console.log('No ID found. Creating new'); //todo check online for email addr.
+        console.log('No ID found. Getting ID from database..');
         await this.initUser(this.username, this.email)
           .then((result) => {
+            //todo save this.id here using result
             console.log('Uploaded new user with ID: ' + this.id);
             (async () => {
               let result = await this.storage.storeID(this.id);
@@ -157,7 +159,9 @@ class App extends React.Component {
                   );
                   await this.uploadDataForDate(date);
                 } else {
-                  console.log('Data for day: ' + ' : ' + JSON.stringify(result));
+                  console.log(
+                    'Data for day: ' + ' : ' + JSON.stringify(result),
+                  );
                 }
               })();
             })
@@ -187,18 +191,40 @@ class App extends React.Component {
   }
 
   async initUser(username: String, email: String): Promise {
+    //todo return promise
+    // Check for an existing account, retrieve ID.
     await API.graphql(
-      graphqlOperation(createUser, {
-        input: {username: username, email: email},
+      graphqlOperation(getUser, {
+        input: {email: email},
       }),
     )
       .then((result) => {
-        this.id = result.data.createUser.ID;
+        this.id = result.data.getUser.ID;
+        console.log(JSON.stringify(result));
         console.log('New ID: ' + this.id);
       })
       .catch((error) => {
-        console.log('Failed to initialise user');
+        console.log(
+          'Failed to get existing account with matching credentials.',
+        );
       });
+    if (!this.id) {
+      // Register a new user
+      await API.graphql(
+        graphqlOperation(createUser, {
+          input: {username: username, email: email},
+        }),
+      )
+        .then((result) => {
+          this.id = result.data.createUser.ID;
+          console.log('New ID: ' + this.id);
+          console.log(JSON.stringify(result));
+
+        })
+        .catch((error) => {
+          console.log('Failed to initialise user');
+        });
+    }
   }
 
   /**
@@ -212,7 +238,7 @@ class App extends React.Component {
     return new Promise((resolve, reject) => {
       API.graphql(
         graphqlOperation(getUser, {
-          ID: id,
+          email: email,
         }),
       )
         .then((result) => {
@@ -284,7 +310,7 @@ class App extends React.Component {
     let healthDataAccessEnabled = this.storage.hasHealthDataAccess();
     // Check if Health data access is granted
     // Request permission
-    AppleHealthKit.initHealthKit(
+    await AppleHealthKit.initHealthKit(
       this.defaultHealthDataOptions,
       (error, result) => {
         if (error) {
@@ -566,7 +592,9 @@ class App extends React.Component {
     return (
       <View style={{alignItems: 'center'}}>
         <View style={{margin: 10}}>
-          <Text style={styles.dataDisplayText}>Over last week you averaged:</Text>
+          <Text style={styles.dataDisplayText}>
+            Over last week you averaged:
+          </Text>
         </View>
         <DataDisplay
           arr={[

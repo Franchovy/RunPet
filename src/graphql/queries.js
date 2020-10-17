@@ -31,8 +31,8 @@ export const listData = /* GraphQL */ `
   }
 `;
 export const getUser = /* GraphQL */ `
-  query GetUser($ID: ID!) {
-    getUser(ID: $ID) {
+  query GetUser($email: AWSEmail!) {
+    getUser(email: $email) {
       ID
       email
       username

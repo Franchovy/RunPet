@@ -6,7 +6,7 @@ export class StoreData {
       await AsyncStorage.setItem('ID', userID);
     } catch (e) {
       // saving error
-      alert('Error saving to device');
+      console.error('Error saving to device');
     }
 
     return AsyncStorage.setItem('ID', userID);
@@ -17,7 +17,7 @@ export class StoreData {
       return await AsyncStorage.getItem('ID');
     } catch (e) {
       // error reading value
-      alert('Error reading from device');
+      console.error('Error reading from device');
     }
   }
 
@@ -26,7 +26,7 @@ export class StoreData {
       return (await AsyncStorage.getItem('healthDataAccessGranted')) === 'true';
     } catch (e) {
       // error
-      alert('Error reading from device');
+      console.error('Error reading from device');
     }
   }
 
@@ -38,7 +38,25 @@ export class StoreData {
       );
     } catch (e) {
       // error
-      alert('Error writing to device');
+      console.error('Error writing to device');
+    }
+  }
+
+  async getLatestUploadDate(): Date {
+    try {
+      return Date(await AsyncStorage.getItem('latestDate'));
+    } catch (e) {
+      // error
+      console.error('Error reading from device');
+    }
+  }
+
+  async storeLatestUploadDate(latestDate: Date) {
+    try {
+      await AsyncStorage.setItem('latestDate', latestDate.toISOString());
+    } catch (e) {
+      // error
+      console.error('Error writing to device');
     }
   }
 }
