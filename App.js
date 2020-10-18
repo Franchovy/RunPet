@@ -99,45 +99,83 @@ class App extends React.Component {
       },
     };
 
+    //todo
+
+    //await init healthdata
+    // .then(has healthdata access  = true) catch no health data or no access
+    // .then(get last date) catch(set date to last week)
+    // .then(fetchHealthData(last date))
+    //    .then(upload data)
+
+    // display data
+    // getLastWeekData catch: no access
+    // .then(calculate avg. (skip if data null)
+    //     display avg. and todayData)
+
     (async () => {
       // Get data about current login session / authenticated user
       let user = await Auth.currentAuthenticatedUser();
       this.username = user.username;
       this.email = user.attributes.email;
 
-      // Check ID already stored if there is one
-      let id = await this.storage.getID();
-      if (id !== null) {
-        this.id = await this.checkID(id, this.username, this.email);
-        if (this.id !== id) {
-          // Save new ID
-          await (async () => {
-            let result = await this.storage.storeID(this.id);
-            console.log('Stored ID. + ' + JSON.stringify(result));
+      // Fetch ID from database using email
+      await this.fetchID(this.email)
+        .then((result) => {
+          if (result.id !== null) {
+            this.id = result.id;
+          }
+
+          (async () => {
+            // Check ID in storage
+            let storageid = await this.storage.getID();
+            if (storageid !== this.id) {
+              console.warn('Mismatched storage ID and database ID. Updating..');
+              await this.storage.storeID(this.id);
+            }
           })();
-        } else {
-          console.log('Using ID: ' + id);
-        }
-      } else {
-        console.log('No ID found. Getting ID from database..');
-        await this.initUser(this.username, this.email)
-          .then((result) => {
-            //todo save this.id here using result
-            console.log('Uploaded new user with ID: ' + this.id);
-            (async () => {
-              let result = await this.storage.storeID(this.id);
-              console.log('Stored ID. + ' + JSON.stringify(result));
-            })();
-          })
-          .catch((error) => {
-            alert('Error syncing account!');
-          });
-      }
+        })
+        .catch((error) => {
+          // Network error / could not confirm ID
+          //todo display network error message
+        });
+
+      // Log ID being used
+      console.log('Using ID: ' + this.id);
+
+      // Health Data access test
+      await this.checkHealthDataAccessPrompt().then((result) => {
+        (async () => {
+          // Upload data since last upload
+          if (result.access) {
+            // Get last date
+            let result = await this.storage.getLatestUploadDate();
+            let latestDate = new Date(result);
+
+            console.log('Latest date: ' + JSON.stringify(result));
+
+            //Set latest date to one week ago by default
+            if (result === null) {
+              latestDate = new Date();
+              latestDate.setDate(new Date().getDate() - 7);
+            }
+
+            // Upload data since
+            let todayDate = new Date();
+            let numDaysToUpload = todayDate.getDate() - latestDate.getDate();
+            console.log('Num days to upload: ' + numDaysToUpload);
+            for (let i = 1; i < numDaysToUpload; i++) {
+              let date = new Date();
+              date.setDate(todayDate.getDate() - i);
+            }
+            // Store today as the previous upload date
+            await this.storage.storeLatestUploadDate(new Date());
+          }
+        })();
+      });
 
       // Check if access had previously been granted
       if (this.storage.hasHealthDataAccess()) {
         // Check permissions for apple health
-        await this.checkHealthDataAccessPrompt();
 
         // Get data for the previous week
         let todayDate = new Date();
@@ -190,51 +228,12 @@ class App extends React.Component {
     })();
   }
 
-  async initUser(username: String, email: String): Promise {
-    //todo return promise
-    // Check for an existing account, retrieve ID.
-    await API.graphql(
-      graphqlOperation(getUser, {
-        input: {email: email},
-      }),
-    )
-      .then((result) => {
-        this.id = result.data.getUser.ID;
-        console.log(JSON.stringify(result));
-        console.log('New ID: ' + this.id);
-      })
-      .catch((error) => {
-        console.log(
-          'Failed to get existing account with matching credentials.',
-        );
-      });
-    if (!this.id) {
-      // Register a new user
-      await API.graphql(
-        graphqlOperation(createUser, {
-          input: {username: username, email: email},
-        }),
-      )
-        .then((result) => {
-          this.id = result.data.createUser.ID;
-          console.log('New ID: ' + this.id);
-          console.log(JSON.stringify(result));
-
-        })
-        .catch((error) => {
-          console.log('Failed to initialise user');
-        });
-    }
-  }
-
   /**
    * Checks for user online - if there isn't one it creates anew.
-   * @param id ID to check whether present
-   * @param username that is used with cognito account
    * @param email that is used with cognito account
    * @returns Promise containing ID, new ID or error upon creation.
    */
-  async checkID(id: String, username: String, email: String) {
+  async fetchID(email: String): Promise {
     return new Promise((resolve, reject) => {
       API.graphql(
         graphqlOperation(getUser, {
@@ -242,15 +241,9 @@ class App extends React.Component {
         }),
       )
         .then((result) => {
-          if (
-            result.data.getUser.email === email &&
-            result.data.getUser.username === username
-          ) {
-            console.log('Confirmed account on cloud.');
-            resolve(id);
-            return;
+          if (result.data.getUser !== null) {
+            resolve({id: result.data.getUser.ID});
           }
-          reject('ID mismatching!');
         })
         .catch((error) => {
           if (Object.keys(error).length !== 0) {
@@ -264,12 +257,12 @@ class App extends React.Component {
             (async () => {
               await API.graphql(
                 graphqlOperation(createUser, {
-                  input: {ID: id, username: username, email: email},
+                  input: {username: this.username, email: email},
                 }),
               )
                 .then((result) => {
                   console.log('NEW ACCOUNT CREATED: ' + JSON.stringify(result));
-                  resolve(result.data.createUser.ID);
+                  resolve({id: result.data.createUser.ID});
                 })
                 .catch((error) => {
                   console.log("COULDN'T CREATE NEW ACCOUNT");
@@ -283,7 +276,7 @@ class App extends React.Component {
 
   async uploadDataForDate(date: Date) {
     console.log('No data for day: ' + date + ', uploading data.');
-    let dayData = await this.calculateDailyData(date);
+    let dayData = await this.fetchDataForDay(date);
 
     API.graphql(
       graphqlOperation(createData, {
@@ -307,45 +300,39 @@ class App extends React.Component {
   }
 
   async checkHealthDataAccessPrompt() {
-    let healthDataAccessEnabled = this.storage.hasHealthDataAccess();
-    // Check if Health data access is granted
-    // Request permission
-    await AppleHealthKit.initHealthKit(
-      this.defaultHealthDataOptions,
-      (error, result) => {
-        if (error) {
-          healthDataAccessEnabled = false;
-        }
-        if (healthDataAccessEnabled) {
-          this.getStepCount({})
-            .then((result) => {
-              healthDataAccessEnabled = true;
-            })
-            .catch((error) => {
-              healthDataAccessEnabled = false;
-            });
-        }
-      },
-    );
+    return new Promise((resolve, reject) => {
+      (async () => {
+        // Request permission
+        await AppleHealthKit.initHealthKit(
+          this.defaultHealthDataOptions,
+          (error, result) => {
+            let hasAccess;
+            if (error) {
+              hasAccess = false;
+            }
+            (async () => {
+              await this.getStepCount({})
+                .then((result) => {
+                  hasAccess = true;
+                })
+                .catch((error) => {
+                  hasAccess = false;
+                });
 
-    if (!healthDataAccessEnabled) {
-      Alert.alert(
-        'Permissions not granted!',
-        'Please go to settings to allow access to Apple Health.',
-      );
-    } else {
-      console.log('Health Data Access enabled');
-    }
-    await this.storage
-      .setHasHealthDataAccess(healthDataAccessEnabled)
-      .then(() => {
-        console.log('Saved healthDataAccess value: ' + healthDataAccessEnabled);
-      })
-      .catch((error) => {
-        console.log('error writing to storage!');
-      });
-    this.setState({
-      hasHealthDataAccess: healthDataAccessEnabled,
+              if (hasAccess) {
+                resolve({access: true});
+              } else {
+                //todo display message instead
+                Alert.alert(
+                  'Permissions not granted!',
+                  'Please go to settings to allow access to Apple Health.',
+                );
+                reject({error: 'Permissions not granted', access: false});
+              }
+            })();
+          },
+        );
+      })();
     });
   }
 
@@ -419,7 +406,7 @@ class App extends React.Component {
     });
   }
 
-  async calculateDailyData(date: Date): Promise {
+  async fetchDataForDay(date: Date): Promise {
     return new Promise((resolve, reject) => {
       date.setHours(0, 0, 0, 0);
       let dateOptionsDay = {
@@ -429,12 +416,6 @@ class App extends React.Component {
       startDate.setDate(date.getDate());
       let endDate = new Date(date);
       endDate.setDate(date.getDate() + 1);
-      console.log(
-        'Start date: ' +
-          startDate.toISOString() +
-          ' End date: ' +
-          endDate.toISOString(),
-      );
       let dateOptionsPeriod = {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
@@ -464,7 +445,7 @@ class App extends React.Component {
         for (let i = 1; i < 8; i++) {
           let date = new Date();
           date.setDate(todayDate.getDate() - i);
-          let dayData = await this.calculateDailyData(date);
+          let dayData = await this.fetchDataForDay(date);
           sumData.stepCount += dayData.stepCount;
           sumData.distance += dayData.distance;
           sumData.calories += dayData.calories;
@@ -495,7 +476,7 @@ class App extends React.Component {
   }
 
   async updateTodaysData() {
-    let todaysData = await this.calculateDailyData(new Date());
+    let todaysData = await this.fetchDataForDay(new Date());
 
     this.setState({
       todaysData: {
@@ -519,22 +500,6 @@ class App extends React.Component {
   }
 
   accessButtonPressed() {
-    if (!this.state.hasHealthDataAccess) {
-      this.checkHealthDataAccessPrompt().catch((error) => {
-        this.setState({
-          accessButtonText: 'Missing access - Please change settings',
-          accessButtonDisabled: false,
-          sendDataButtonDisabled: true,
-          hasHealthDataAccess: false,
-        });
-        console.warn(JSON.stringify(error));
-      });
-      if (!this.state.hasHealthDataAccess) {
-        console.log('No health access.');
-        return;
-      }
-    }
-
     AppleHealthKit.initHealthKit(
       this.defaultHealthDataOptions,
       (error, result) => {

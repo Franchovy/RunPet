@@ -44,7 +44,7 @@ export class StoreData {
 
   async getLatestUploadDate(): Date {
     try {
-      return Date(await AsyncStorage.getItem('latestDate'));
+      return await AsyncStorage.getItem('latestDate');
     } catch (e) {
       // error
       console.error('Error reading from device');
@@ -53,7 +53,7 @@ export class StoreData {
 
   async storeLatestUploadDate(latestDate: Date) {
     try {
-      await AsyncStorage.setItem('latestDate', latestDate.toISOString());
+      await AsyncStorage.setItem('latestDate', latestDate.toDateString());
     } catch (e) {
       // error
       console.error('Error writing to device');
