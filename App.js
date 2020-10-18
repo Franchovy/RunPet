@@ -21,7 +21,6 @@ import Amplify, {API, Auth, graphqlOperation} from 'aws-amplify';
 import {withAuthenticator} from 'aws-amplify-react-native';
 import awsconfig from './src/aws-exports';
 Amplify.configure(awsconfig);
-
 import EStyleSheet from 'react-native-extended-stylesheet';
 import {createData, createUser} from './src/graphql/mutations';
 import {getData, getUser} from './src/graphql/queries';
@@ -147,6 +146,8 @@ class App extends React.Component {
         (async () => {
           // Upload data since last upload
           if (result.access) {
+            this.setState({hasHealthDataAccess: true});
+
             // Get last date
             let result = await this.storage.getLatestUploadDate();
             let latestDate = new Date(result);
@@ -173,57 +174,10 @@ class App extends React.Component {
         })();
       });
 
-      // Check if access had previously been granted
-      if (this.storage.hasHealthDataAccess()) {
-        // Check permissions for apple health
-
-        // Get data for the previous week
-        let todayDate = new Date();
-        for (let i = 1; i < 8; i++) {
-          let date = new Date();
-          date.setDate(todayDate.getDate() - i);
-
-          API.graphql(
-            graphqlOperation(getData, {
-              ID: this.id,
-              date: this.AWSFormatString(todayDate),
-            }),
-          )
-            .then((result) => {
-              (async () => {
-                if (result.data.getData === null) {
-                  console.log(
-                    'Uploading data for day: ' + ' : ' + JSON.stringify(result),
-                  );
-                  await this.uploadDataForDate(date);
-                } else {
-                  console.log(
-                    'Data for day: ' + ' : ' + JSON.stringify(result),
-                  );
-                }
-              })();
-            })
-            .catch((error) => {
-              (async () => {
-                if (Object.keys(error).length === 0) {
-                  await this.uploadDataForDate(date);
-                } else {
-                  console.error(
-                    'Error checking data: ' + JSON.stringify(error),
-                  );
-                }
-              })();
-            });
-        }
-
-        // Load health data for previous week
-        if (this.state.hasHealthDataAccess) {
-          console.log('Access button pressed');
-          this.accessButtonPressed();
-        }
-      } else {
-        // Display access health data button if no access currently
-        this.setState({displayAccessHealthDataButton: false});
+      // Load health data for previous week
+      if (this.state.hasHealthDataAccess) {
+        console.log('Access button pressed');
+        this.accessButtonPressed();
       }
     })();
   }
