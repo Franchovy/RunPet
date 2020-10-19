@@ -94,7 +94,12 @@ class App extends React.Component {
     this.storage = new StoreData();
     this.defaultHealthDataOptions = {
       permissions: {
-        read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
+        read: [
+          'StepCount',
+          'DistanceWalkingRunning',
+          'ActiveEnergyBurned',
+          'BasalEnergyBurned',
+        ],
       },
     };
 
@@ -279,31 +284,82 @@ class App extends React.Component {
 
   async getCalories(dateOptionsPeriod): Promise {
     return new Promise((resolve, reject) => {
-      AppleHealthKit.getActiveEnergyBurned(dateOptionsPeriod, (err, res) => {
-        if (err) {
-          if (err.message.startsWith('No data available')) {
-            console.log(
-              'Error: No calories data available for ' +
-                dateOptionsPeriod.startDate +
-                ' - ' +
-                dateOptionsPeriod.endDate,
-            );
-          } else {
-            console.log('Calories error.');
-          }
-          return reject(err);
-        }
-        if (res.length === 0) {
-          console.log(
-            'Returned no Calorie data for ' +
-              dateOptionsPeriod.startDate +
-              ' - ' +
-              dateOptionsPeriod.endDate,
+      (async () => {
+        let caloriesTotal = 0;
+
+        // Add active calorie data
+        caloriesTotal += await new Promise((resolve, reject) => {
+          AppleHealthKit.getActiveEnergyBurned(
+            dateOptionsPeriod,
+            (err, res) => {
+              if (err) {
+                if (err.message.startsWith('No data available')) {
+                  console.warn(
+                    'Error: No calories data available for ' +
+                      dateOptionsPeriod.startDate +
+                      ' - ' +
+                      dateOptionsPeriod.endDate,
+                  );
+                } else {
+                  console.log('Calories error.');
+                }
+                return reject(err);
+              }
+              if (res.length === 0) {
+                console.warn(
+                  'No Calorie data for ' +
+                    dateOptionsPeriod.startDate +
+                    ' - ' +
+                    dateOptionsPeriod.endDate,
+                );
+                return reject();
+              }
+              return resolve(parseInt(res[0].value));
+            },
           );
-          return reject();
-        }
-        resolve(parseInt(res[0].value));
-      });
+        }).catch((error) => {
+          return 0;
+        });
+
+        // Add passive calorie data
+        caloriesTotal += await new Promise((resolve, reject) => {
+          AppleHealthKit.getBasalEnergyBurned(dateOptionsPeriod, (err, res) => {
+            if (err) {
+              if (err.message.startsWith('No data available')) {
+                console.warn(
+                  'Error: No calories data available for ' +
+                    dateOptionsPeriod.startDate +
+                    ' - ' +
+                    dateOptionsPeriod.endDate,
+                );
+              } else {
+                console.log('Calories error.');
+              }
+              return reject(err);
+            }
+            if (res.length === 0) {
+              console.warn(
+                'Returned no Calorie data for ' +
+                  dateOptionsPeriod.startDate +
+                  ' - ' +
+                  dateOptionsPeriod.endDate,
+              );
+              return reject();
+            }
+            return resolve(parseInt(res[0].value));
+          });
+        }).catch((error) => {
+          return 0;
+        });
+
+        console.log(
+          'Returning ' +
+            caloriesTotal +
+            ' calories for ' +
+            dateOptionsPeriod.startDate,
+        );
+        resolve(caloriesTotal);
+      })();
     });
   }
 
