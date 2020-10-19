@@ -555,12 +555,13 @@ class App extends React.Component {
                 this.state.todaysData.stepCount.valueOf() === 1
                   ? 'Step'
                   : 'Steps',
-              percentage:
+              percentageValue:
                 this.roundTo(
                   this.state.todaysData.stepCount /
                     this.state.lastWeekData.stepCount,
                   2,
                 ) * 100,
+              showPercentage: true,
               data: this.state.todaysData.stepCount,
             },
             {
@@ -568,12 +569,13 @@ class App extends React.Component {
                 this.state.todaysData.calories.valueOf() === 1
                   ? 'Calorie'
                   : 'Calories',
-              percentage:
+              percentageValue:
                 this.roundTo(
                   this.state.todaysData.calories /
                     this.state.lastWeekData.calories,
                   2,
                 ) * 100,
+              showPercentage: true,
               data: this.state.todaysData.calories,
             },
             {
@@ -581,12 +583,13 @@ class App extends React.Component {
                 this.state.todaysData.distance.valueOf() === 1.0
                   ? 'Mile'
                   : 'Miles',
-              percentage: this.roundTo(
+              percentageValue: this.roundTo(
                 (this.state.todaysData.distance /
                   this.state.lastWeekData.distance) *
                   100,
                 0,
               ),
+              showPercentage: true,
               data: this.roundTo(this.state.todaysData.distance, 1),
             },
           ]}

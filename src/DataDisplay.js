@@ -40,12 +40,12 @@ export class DataDisplay extends React.Component {
           <Text
             style={[
               styles.textPercentage,
-              this.getPercentColor(item.percentage),
+              this.getPercentColor(item.percentageValue),
             ]}>
-            {item.percentage}
-            {item.percentage ? '%' : ''}
+            {item.percentageValue}
+            {item.showPercentage ? '%' : ''}
           </Text>
-          <Text style={styles.textSubText}>{item.percentage ? 'of today\'s ' + item.name : ''}</Text>
+          <Text style={styles.textSubText}>{item.showPercentage ? 'of today\'s ' + item.name : ''}</Text>
         </View>
       );
     });
