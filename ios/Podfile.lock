@@ -311,6 +311,8 @@ PODS:
     - React-Core/RCTVibrationHeaders (= 0.63.3)
     - React-jsi (= 0.63.3)
     - ReactCommon/turbomodule/core (= 0.63.3)
+  - React-TestFairy (2.33.0):
+    - React
   - ReactCommon/turbomodule/core (0.63.3):
     - DoubleConversion
     - Folly (= 2020.01.13.00)
@@ -384,6 +386,7 @@ DEPENDENCIES:
   - React-RCTSettings (from `../node_modules/react-native/Libraries/Settings`)
   - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
+  - React-TestFairy (from `../node_modules/react-native-testfairy`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNAWSCognito (from `../node_modules/amazon-cognito-identity-js`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
@@ -467,6 +470,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Text"
   React-RCTVibration:
     :path: "../node_modules/react-native/Libraries/Vibration"
+  React-TestFairy:
+    :path: "../node_modules/react-native-testfairy"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
   RNAWSCognito:
@@ -522,6 +527,7 @@ SPEC CHECKSUMS:
   React-RCTSettings: d6953772cfd55f2c68ad72b7ef29efc7ec49f773
   React-RCTText: 65a6de06a7389098ce24340d1d3556015c38f746
   React-RCTVibration: 8e9fb25724a0805107fc1acc9075e26f814df454
+  React-TestFairy: 0b476f8a4ff4cb437eceb9f258a7ce0538d6ed1c
   ReactCommon: 4167844018c9ed375cc01a843e9ee564399e53c3
   RNAWSCognito: 1b60a33273f4ead618ee360b250286e720981216
   RNCAsyncStorage: cb9a623793918c6699586281f0b51cbc38f046f9
@@ -529,6 +535,6 @@ SPEC CHECKSUMS:
   Yoga: 7d13633d129fd179e01b8953d38d47be90db185a
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 367e3d824324026b494f0cb05845a25f4fee5465
+PODFILE CHECKSUM: 5cbe61a681a0c6741ae557f53759285c86c2426a
 
 COCOAPODS: 1.9.3

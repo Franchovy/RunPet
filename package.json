@@ -24,6 +24,7 @@
     "react-native-elements": "^2.3.2",
     "react-native-extended-stylesheet": "^0.12.0",
     "react-native-sound": "^0.11.0",
+    "react-native-testfairy": "^2.33.0",
     "rn-apple-healthkit": "^0.8.0",
     "typescript": "^4.0.3"
   },

@@ -72,14 +72,14 @@ class App extends React.Component {
     sendDataButtonText: 'Update Data',
     distanceUnitMiles: true,
     todaysData: {
-      stepCount: -1,
-      calories: -1,
-      distance: -1.0,
+      stepCount: 0,
+      calories: 0,
+      distance: 0.0,
     },
     lastWeekData: {
-      stepCount: -1,
-      calories: -1,
-      distance: -1.0,
+      stepCount: 0,
+      calories: 0,
+      distance: 0.0,
     },
   };
 
@@ -97,19 +97,6 @@ class App extends React.Component {
         read: ['StepCount', 'DistanceWalkingRunning', 'ActiveEnergyBurned'],
       },
     };
-
-    //todo
-
-    //await init healthdata
-    // .then(has healthdata access  = true) catch no health data or no access
-    // .then(get last date) catch(set date to last week)
-    // .then(fetchHealthData(last date))
-    //    .then(upload data)
-
-    // display data
-    // getLastWeekData catch: no access
-    // .then(calculate avg. (skip if data null)
-    //     display avg. and todayData)
 
     (async () => {
       // Get data about current login session / authenticated user
@@ -170,15 +157,15 @@ class App extends React.Component {
             }
             // Store today as the previous upload date
             await this.storage.storeLatestUploadDate(new Date());
+
+            // Load health data for previous week
+            if (this.state.hasHealthDataAccess) {
+              console.log('Access button pressed');
+              this.accessButtonPressed();
+            }
           }
         })();
       });
-
-      // Load health data for previous week
-      if (this.state.hasHealthDataAccess) {
-        console.log('Access button pressed');
-        this.accessButtonPressed();
-      }
     })();
   }
 
@@ -376,11 +363,23 @@ class App extends React.Component {
       };
       (async () => {
         // Get step count
-        let stepCount = await this.getStepCount(dateOptionsDay);
+        let stepCount = await this.getStepCount(dateOptionsDay).catch(
+          (error) => {
+            return 0;
+          },
+        );
         // Get distance walked
-        let distance = await this.getDistance(dateOptionsDay, {unit: 'mile'});
+        let distance = await this.getDistance(dateOptionsDay, {
+          unit: 'mile',
+        }).catch((error) => {
+          return 0;
+        });
         // Get Calories burned
-        let calories = await this.getCalories(dateOptionsPeriod);
+        let calories = await this.getCalories(dateOptionsPeriod).catch(
+          (error) => {
+            return 0;
+          },
+        );
         resolve({
           stepCount: stepCount,
           distance: distance,
@@ -443,6 +442,8 @@ class App extends React.Component {
 
   async updateWeeklyData() {
     let averageWeeklyData = await this.calculateAverageWeeklyData();
+
+    console.log(JSON.stringify(averageWeeklyData));
 
     this.setState({
       lastWeekData: {
