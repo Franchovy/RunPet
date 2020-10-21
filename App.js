@@ -419,12 +419,16 @@ class App extends React.Component {
 
   async fetchDataForDay(date: Date): Promise {
     return new Promise((resolve, reject) => {
+      console.log('Fetching data for day: ' + date.toISOString());
+
       date.setHours(0, 0, 0, 0);
-      let dateOptionsDay = {
-        date: date.toISOString(),
-      };
       let startDate = new Date(date);
       startDate.setDate(date.getDate() - 1);
+
+      let dateOptionsDay = {
+        date: startDate.toISOString(),
+      };
+
       let endDate = new Date(date);
       endDate.setDate(date.getDate());
       let dateOptionsPeriod = {
