@@ -103,6 +103,11 @@ class App extends React.Component {
       },
     };
 
+    let newLatestUploadDate = new Date();
+    newLatestUploadDate.setDate(new Date().getDate() - 4);
+    // Store today as the previous upload date
+    this.storage.storeLatestUploadDate(newLatestUploadDate);
+
     (async () => {
       // Get data about current login session / authenticated user
       let user = await Auth.currentAuthenticatedUser();
@@ -141,27 +146,34 @@ class App extends React.Component {
             this.setState({hasHealthDataAccess: true});
 
             // Get last date
-            let result = await this.storage.getLatestUploadDate();
-            let latestDate = new Date(result);
-
-            console.log('Latest date: ' + JSON.stringify(result));
+            let latestDateResult = await this.storage.getLatestUploadDate();
+            let latestDate = new Date(latestDateResult);
 
             //Set latest date to one week ago by default
-            if (result === null) {
+            if (latestDateResult === null) {
               latestDate = new Date();
               latestDate.setDate(new Date().getDate() - 7);
             }
 
+            console.log('Latest upload on ' + JSON.stringify(latestDateResult));
+
             // Upload data since
             let todayDate = new Date();
             let numDaysToUpload = todayDate.getDate() - latestDate.getDate();
+
+            // Iterate for each day needing an upload
             console.log('Num days to upload: ' + numDaysToUpload);
-            for (let i = 1; i < numDaysToUpload; i++) {
+            for (let i = 0; i < numDaysToUpload; i++) {
               let date = new Date();
               date.setDate(todayDate.getDate() - i);
+
+              // Upload data for date
+              await this.uploadDataForDate(date);
             }
+            let newLatestUploadDate = todayDate;
+            newLatestUploadDate.setDate(new Date().getDate() - 1);
             // Store today as the previous upload date
-            await this.storage.storeLatestUploadDate(new Date());
+            await this.storage.storeLatestUploadDate(newLatestUploadDate);
 
             // Load health data for previous week
             if (this.state.hasHealthDataAccess) {
@@ -295,7 +307,7 @@ class App extends React.Component {
               if (err) {
                 if (err.message.startsWith('No data available')) {
                   console.warn(
-                    'Error: No calories data available for ' +
+                    'Error: No active calories data available for ' +
                       dateOptionsPeriod.startDate +
                       ' - ' +
                       dateOptionsPeriod.endDate,
@@ -307,7 +319,7 @@ class App extends React.Component {
               }
               if (res.length === 0) {
                 console.warn(
-                  'No Calorie data for ' +
+                  'No Active Calorie data for ' +
                     dateOptionsPeriod.startDate +
                     ' - ' +
                     dateOptionsPeriod.endDate,
@@ -327,7 +339,7 @@ class App extends React.Component {
             if (err) {
               if (err.message.startsWith('No data available')) {
                 console.warn(
-                  'Error: No calories data available for ' +
+                  'Error: No resting calories data available for ' +
                     dateOptionsPeriod.startDate +
                     ' - ' +
                     dateOptionsPeriod.endDate,
@@ -339,7 +351,7 @@ class App extends React.Component {
             }
             if (res.length === 0) {
               console.warn(
-                'Returned no Calorie data for ' +
+                'No Resting Calorie data for ' +
                   dateOptionsPeriod.startDate +
                   ' - ' +
                   dateOptionsPeriod.endDate,
@@ -352,12 +364,6 @@ class App extends React.Component {
           return 0;
         });
 
-        console.log(
-          'Returning ' +
-            caloriesTotal +
-            ' calories for ' +
-            dateOptionsPeriod.startDate,
-        );
         resolve(caloriesTotal);
       })();
     });
