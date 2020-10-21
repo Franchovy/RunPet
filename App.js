@@ -251,9 +251,17 @@ class App extends React.Component {
         console.log('Successfully uploaded data for ' + date);
       })
       .catch((error) => {
-        console.log(
-          'Error uploading data for ' + date + ': ' + JSON.stringify(error),
-        );
+        if (
+          error.errorType.startsWith('DynamoDB:ConditionalCheckFailedException')
+        ) {
+          console.warn(
+            'Could not upload data for ' + date + ', data already present.',
+          );
+        } else {
+          console.warn(
+            'Error uploading data for ' + date + ': ' + JSON.stringify(error),
+          );
+        }
       });
   }
 
@@ -416,9 +424,9 @@ class App extends React.Component {
         date: date.toISOString(),
       };
       let startDate = new Date(date);
-      startDate.setDate(date.getDate());
+      startDate.setDate(date.getDate() - 1);
       let endDate = new Date(date);
-      endDate.setDate(date.getDate() + 1);
+      endDate.setDate(date.getDate());
       let dateOptionsPeriod = {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
