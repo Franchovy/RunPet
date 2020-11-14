@@ -419,18 +419,19 @@ class App extends React.Component {
 
   async fetchDataForDay(date: Date): Promise {
     return new Promise((resolve, reject) => {
-      console.log('Fetching data for day: ' + date.toISOString());
-
+      // Use given date to derive date parameters for GraphQL calls
+      // Set start date to midnight the day before
       date.setHours(0, 0, 0, 0);
       let startDate = new Date(date);
       startDate.setDate(date.getDate() - 1);
-
+      // Single date parameter options
       let dateOptionsDay = {
         date: startDate.toISOString(),
       };
-
+      // Set end date to midnight the day after
       let endDate = new Date(date);
       endDate.setDate(date.getDate());
+      // Start-End date parameter options
       let dateOptionsPeriod = {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),

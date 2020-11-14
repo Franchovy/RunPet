@@ -9,6 +9,7 @@ target 'RunPet' do
   use_react_native!(:path => config["reactNativePath"])
 
   pod 'RCTAppleHealthKit', :path => '../node_modules/rn-apple-healthkit'
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-community/async-storage'
 
   target 'RunPetTests' do
     inherit! :complete
@@ -30,3 +31,6 @@ target 'RunPet' do
       end
   end
 end
+
+
+
