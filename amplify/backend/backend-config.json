@@ -1,22 +1,5 @@
 {
-  "api": {
-    "runpet": {
-      "service": "AppSync",
-      "providerPlugin": "awscloudformation",
-      "output": {
-        "authConfig": {
-          "defaultAuthentication": {
-            "authenticationType": "API_KEY",
-            "apiKeyConfig": {
-              "apiKeyExpirationDays": 30,
-              "description": "30"
-            }
-          },
-          "additionalAuthenticationProviders": []
-        }
-      }
-    }
-  },
+  "api": {},
   "auth": {
     "runpet8a860d86": {
       "service": "Cognito",

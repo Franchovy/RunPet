@@ -1,0 +1,15 @@
+projects:
+  RunPet API:
+    schemaPath: graphql/schema.json
+    includes:
+      - src/graphql/**/*.js
+    excludes:
+      - ./amplify/**
+    extensions:
+      amplify:
+        codeGenTarget: javascript
+        generatedFileName: ''
+        docsFilePath: graphql
+        region: us-east-1
+        apiId: iagv43wvzrh2zpwwm4wgbqdpnq
+        maxDepth: 2
