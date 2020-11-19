@@ -437,19 +437,23 @@ class App extends React.Component {
       let sumData = {stepCount: 0, distance: 0.0, calories: 0};
       (async () => {
         let todayDate = new Date();
-        for (let i = 1; i < 8; i++) {
+        for (let i = 0; i < 7; i++) {
           let date = new Date();
           date.setDate(todayDate.getDate() - i);
           let dayData = await this.fetchDataForDay(date);
+          console.log(dayData);
+
           sumData.stepCount += dayData.stepCount;
           sumData.distance += dayData.distance;
           sumData.calories += dayData.calories;
         }
+
         // Calculate average data
         sumData.stepCount = this.roundTo(sumData.stepCount / 7, 0);
         sumData.distance = this.roundTo(sumData.distance / 7, 1);
         sumData.calories = this.roundTo(sumData.calories / 7, 0);
 
+        console.warn(sumData)
         resolve(sumData);
       })();
     });
