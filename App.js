@@ -32,6 +32,8 @@ import {StoreData} from './src/StoreData';
 
 import {AmplifyTheme} from 'aws-amplify-react';
 
+import {HealthDataModel} from './src/models/HealthData.model';
+
 const authTheme = {
   ...AmplifyTheme,
   sectionHeader: {
@@ -118,15 +120,15 @@ class App extends React.Component {
       await this.fetchID(this.email)
         .then((result) => {
           if (result.id !== null) {
-            this.id = result.id;
+            this.userId = result.id;
           }
 
           (async () => {
             // Check ID in storage
             let storageid = await this.storage.getID();
-            if (storageid !== this.id) {
+            if (storageid !== this.userId) {
               console.warn('Mismatched storage ID and database ID. Updating..');
-              await this.storage.storeID(this.id);
+              await this.storage.storeID(this.userId);
             }
           })();
         })
@@ -136,7 +138,7 @@ class App extends React.Component {
         });
 
       // Log ID being used
-      console.log('Using ID: ' + this.id);
+      console.log('Using ID: ' + this.userId);
 
       // Health Data access test
       await this.checkHealthDataAccessPrompt().then((result) => {
@@ -168,7 +170,22 @@ class App extends React.Component {
               date.setDate(todayDate.getDate() - i);
 
               // Upload data for date
-              await this.uploadDataForDate(date);
+              let healthData = {};
+              healthData.date = date;
+
+              // Get health data for date
+              let dayData = await this.fetchDataForDay(healthData.date);
+              healthData.stepCount = dayData.stepCount;
+              healthData.distance = dayData.distance;
+              healthData.calories = dayData.calories;
+
+              // Set UserID to current user
+              healthData.userId = this.userId;
+
+              // Upload data
+              await this.uploadDataForDate(dayData);
+              console.log(healthData);
+              //todo error handling here
             }
             let newLatestUploadDate = todayDate;
             newLatestUploadDate.setDate(new Date().getDate() - 1);
@@ -186,65 +203,62 @@ class App extends React.Component {
     })();
   }
 
-  /**
-   * Checks for user online - if there isn't one it creates anew.
-   * @param email that is used with cognito account
-   * @returns Promise containing ID, new ID or error upon creation.
-   */
-  async fetchID(email: String): Promise {
-    return new Promise((resolve, reject) => {
-      API.graphql(
-        graphqlOperation(getUser, {
-          email: email,
-        }),
-      )
-        .then((result) => {
-          if (result.data.getUser !== null) {
-            resolve({id: result.data.getUser.ID});
-          }
-        })
-        .catch((error) => {
-          if (Object.keys(error).length !== 0) {
-            // Error fetching data
-            console.error('ERROR: ID unconfirmed');
-            console.error(JSON.stringify(error));
-            reject('Could not confirm ID');
-          } else {
-            // Create account on cloud
-            console.log('Creating new user');
-            (async () => {
-              await API.graphql(
-                graphqlOperation(createUser, {
-                  input: {username: this.username, email: email},
-                }),
-              )
-                .then((result) => {
-                  console.log('NEW ACCOUNT CREATED: ' + JSON.stringify(result));
-                  resolve({id: result.data.createUser.ID});
-                })
-                .catch((error) => {
-                  console.log("COULDN'T CREATE NEW ACCOUNT");
-                  reject('Could not create new account');
-                });
-            })();
-          }
-        });
-    });
+  async fetchID(email: String) {
+    // Make GraphQL Query GetUser from @param email
+    API.graphql(
+      //Data for the graphql query
+      graphqlOperation(getUser, {
+        email: email,
+      }),
+    )
+      // Handle result
+      .then((result) => {
+        if (result.data.getUser !== null) {
+          // Return id
+          return {id: result.data.getUser.ID};
+        }
+        throw {message: 'no user found'};
+      })
+      // Handle error
+      .catch((error) => {
+        if (Object.keys(error).length !== 0) {
+          // Could not get data for ID
+          return {error: error, message: 'Could not confirm ID'};
+        } else {
+          // Initialise new account on database
+          console.log('Creating new user');
+          (async () => {
+            await API.graphql(
+              graphqlOperation(createUser, {
+                input: {username: this.username, email: email},
+              }),
+            )
+              .then((result) => {
+                console.log('NEW ACCOUNT CREATED: ' + JSON.stringify(result));
+                return {id: result.data.createUser.ID};
+              })
+              .catch((error) => {
+                console.log("COULDN'T CREATE NEW ACCOUNT");
+                console.error(error);
+                return {error: error, message: 'Could not create new account'};
+              });
+          })();
+        }
+      });
   }
 
-  async uploadDataForDate(date: Date) {
-    console.log('No data for day: ' + date + ', uploading data.');
-    let dayData = await this.fetchDataForDay(date);
-
+  // Uploads healthData model to graphQL
+  //input: {
+  //           ID: this.id,
+  //           date: this.AWSFormatString(date),
+  //           stepCount: dayData.stepCount,
+  //           distance: dayData.distance,
+  //           calories: dayData.calories,
+  //         },
+  async uploadDataForDate(healthData) {
     API.graphql(
       graphqlOperation(createData, {
-        input: {
-          ID: this.id,
-          date: this.AWSFormatString(date),
-          stepCount: dayData.stepCount,
-          distance: dayData.distance,
-          calories: dayData.calories,
-        },
+        healthData,
       }),
     )
       .then((result) => {
@@ -559,7 +573,7 @@ class App extends React.Component {
     await API.graphql(
       graphqlOperation(createData, {
         input: {
-          ID: this.id,
+          ID: this.userId,
           date: this.AWSFormatString(new Date()),
           distance: this.state.todaysData.distance,
           stepCount: this.state.todaysData.stepCount,
