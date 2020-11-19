@@ -117,25 +117,40 @@ class App extends React.Component {
       this.email = user.attributes.email;
 
       // Fetch ID from database using email
-      await this.fetchID(this.email)
-        .then((result) => {
-          if (result.id !== null) {
-            this.userId = result.id;
-          }
+      let idResult = await API.graphql(
+          //Data for the graphql query
+          graphqlOperation(getUser, {
+            email: this.email,
+          }),
+      );
 
-          (async () => {
-            // Check ID in storage
-            let storageid = await this.storage.getID();
-            if (storageid !== this.userId) {
-              console.warn('Mismatched storage ID and database ID. Updating..');
-              await this.storage.storeID(this.userId);
-            }
-          })();
-        })
-        .catch((error) => {
-          // Network error / could not confirm ID
-          //todo display network error message
-        });
+      console.log("Result ID: ");
+      console.log(idResult);
+
+      if (idResult.error) {
+        console.warn('Error in fetching ID.');
+        console.warn(idResult.error);
+
+        // Initialise new user on the database
+        console.log('Creating new user');
+        await API.graphql(
+          graphqlOperation(createUser, {
+            input: {username: this.username, email: this.email},
+          }),
+        )
+          .then((result) => {
+            console.log('NEW ACCOUNT CREATED: ' + JSON.stringify(result));
+            return {id: result.data.createUser.ID};
+          })
+          .catch((error) => {
+            console.log("COULDN'T CREATE NEW ACCOUNT");
+            console.error(error);
+            return {error: error, message: 'Could not create new account'};
+          });
+      }
+      if (result.data.getUser !== null) {
+        this.userId = result.data.getUser.ID;
+      }
 
       // Log ID being used
       console.log('Using ID: ' + this.userId);
@@ -203,49 +218,6 @@ class App extends React.Component {
     })();
   }
 
-  async fetchID(email: String) {
-    // Make GraphQL Query GetUser from @param email
-    API.graphql(
-      //Data for the graphql query
-      graphqlOperation(getUser, {
-        email: email,
-      }),
-    )
-      // Handle result
-      .then((result) => {
-        if (result.data.getUser !== null) {
-          // Return id
-          return {id: result.data.getUser.ID};
-        }
-        throw {message: 'no user found'};
-      })
-      // Handle error
-      .catch((error) => {
-        if (Object.keys(error).length !== 0) {
-          // Could not get data for ID
-          return {error: error, message: 'Could not confirm ID'};
-        } else {
-          // Initialise new account on database
-          console.log('Creating new user');
-          (async () => {
-            await API.graphql(
-              graphqlOperation(createUser, {
-                input: {username: this.username, email: email},
-              }),
-            )
-              .then((result) => {
-                console.log('NEW ACCOUNT CREATED: ' + JSON.stringify(result));
-                return {id: result.data.createUser.ID};
-              })
-              .catch((error) => {
-                console.log("COULDN'T CREATE NEW ACCOUNT");
-                console.error(error);
-                return {error: error, message: 'Could not create new account'};
-              });
-          })();
-        }
-      });
-  }
 
   // Uploads healthData model to graphQL
   //input: {
@@ -262,20 +234,14 @@ class App extends React.Component {
       }),
     )
       .then((result) => {
-        console.log('Successfully uploaded data for ' + date);
+        return {message: 'Successfully uploaded data for ' + healthData.date};
       })
       .catch((error) => {
-        if (
-          error.errorType.startsWith('DynamoDB:ConditionalCheckFailedException')
-        ) {
-          console.warn(
-            'Could not upload data for ' + date + ', data already present.',
-          );
-        } else {
-          console.warn(
-            'Error uploading data for ' + date + ': ' + JSON.stringify(error),
-          );
-        }
+        return {
+          message: 'Error uploading data for date: ' + healthData.date,
+          error: error,
+        };
+        // error startsWith('DynamoDB:ConditionalCheckFailedException') -> data already present
       });
   }
 
