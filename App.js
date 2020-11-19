@@ -105,11 +105,6 @@ class App extends React.Component {
       },
     };
 
-    let newLatestUploadDate = new Date();
-    newLatestUploadDate.setDate(new Date().getDate() - 4);
-    // Store today as the previous upload date
-    this.storage.storeLatestUploadDate(newLatestUploadDate);
-
     (async () => {
       // Get data about current login session / authenticated user
       let user = await Auth.currentAuthenticatedUser();
@@ -190,15 +185,18 @@ class App extends React.Component {
               healthData.calories = dayData.calories;
 
               // Set UserID to current user
-              healthData.userId = this.userId;
+              healthData.ID = this.userId;
+              // Format the date properly for AWS
+              healthData.date = this.AWSFormatString(date);
 
               // Upload data
-              await this.uploadDataForDate(dayData);
+              let uploadResult = await this.uploadDataForDate(healthData);
+              console.log(uploadResult);
               console.log(healthData);
               //todo error handling here
             }
-            let newLatestUploadDate = todayDate;
-            newLatestUploadDate.setDate(new Date().getDate() - 1);
+            let newLatestUploadDate = new Date();
+            newLatestUploadDate.setDate(todayDate.getDate() - 1);
             // Store today as the previous upload date
             await this.storage.storeLatestUploadDate(newLatestUploadDate);
 
@@ -214,28 +212,26 @@ class App extends React.Component {
   }
 
   // Uploads healthData model to graphQL
-  //input: {
-  //           ID: this.id,
-  //           date: this.AWSFormatString(date),
-  //           stepCount: dayData.stepCount,
-  //           distance: dayData.distance,
-  //           calories: dayData.calories,
-  //         },
   async uploadDataForDate(healthData) {
     API.graphql(
       graphqlOperation(createData, {
-        healthData,
+         input: healthData ,
       }),
     )
       .then((result) => {
+        console.log("Uploaded successfully");
         return {message: 'Successfully uploaded data for ' + healthData.date};
       })
       .catch((error) => {
+
+        if (error.errors.length > 1 && error.errors[0].errorType !== "DynamoDB:ConditionalCheckFailedException") {
+          console.error(error);
+        }
+
         return {
           message: 'Error uploading data for date: ' + healthData.date,
           error: error,
         };
-        // error startsWith('DynamoDB:ConditionalCheckFailedException') -> data already present
       });
   }
 
@@ -448,27 +444,12 @@ class App extends React.Component {
           sumData.stepCount += dayData.stepCount;
           sumData.distance += dayData.distance;
           sumData.calories += dayData.calories;
-          console.log(
-            'Steps: ' +
-              dayData.stepCount +
-              ' Distance: ' +
-              dayData.distance +
-              ' Calories: ' +
-              dayData.calories,
-          );
         }
         // Calculate average data
         sumData.stepCount = this.roundTo(sumData.stepCount / 7, 0);
         sumData.distance = this.roundTo(sumData.distance / 7, 1);
         sumData.calories = this.roundTo(sumData.calories / 7, 0);
-        console.log(
-          'Average data: ' +
-            sumData.stepCount +
-            ' ' +
-            sumData.distance +
-            ' ' +
-            sumData.calories,
-        );
+
         resolve(sumData);
       })();
     });
