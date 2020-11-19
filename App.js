@@ -456,7 +456,9 @@ class App extends React.Component {
   }
 
   async updateTodaysData() {
-    let todaysData = await this.fetchDataForDay(new Date());
+    let todayDate = new Date();
+    todayDate.setDate(new Date().getDate() + 1);
+    let todaysData = await this.fetchDataForDay(todayDate);
 
     this.setState({
       todaysData: {
