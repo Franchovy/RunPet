@@ -118,19 +118,14 @@ class App extends React.Component {
 
       // Fetch ID from database using email
       let idResult = await API.graphql(
-          //Data for the graphql query
-          graphqlOperation(getUser, {
-            email: this.email,
-          }),
+        //Data for the graphql query
+        graphqlOperation(getUser, {
+          email: this.email,
+        }),
       );
 
-      console.log("Result ID: ");
-      console.log(idResult);
-
-      if (idResult.error) {
-        console.warn('Error in fetching ID.');
-        console.warn(idResult.error);
-
+      // Check if a user was found
+      if (idResult.data.getUser == null) {
         // Initialise new user on the database
         console.log('Creating new user');
         await API.graphql(
@@ -148,8 +143,8 @@ class App extends React.Component {
             return {error: error, message: 'Could not create new account'};
           });
       }
-      if (result.data.getUser !== null) {
-        this.userId = result.data.getUser.ID;
+      if (idResult.data.getUser !== null) { /////////////////////////////
+        this.userId = idResult.data.getUser.ID;
       }
 
       // Log ID being used
@@ -169,7 +164,7 @@ class App extends React.Component {
             //Set latest date to one week ago by default
             if (latestDateResult === null) {
               latestDate = new Date();
-              latestDate.setDate(new Date().getDate() - 7);
+              latestDate.setDate(new Date().getDate() - 14);
             }
 
             console.log('Latest upload on ' + JSON.stringify(latestDateResult));
@@ -217,7 +212,6 @@ class App extends React.Component {
       });
     })();
   }
-
 
   // Uploads healthData model to graphQL
   //input: {
@@ -399,8 +393,6 @@ class App extends React.Component {
 
   async fetchDataForDay(date: Date): Promise {
     return new Promise((resolve, reject) => {
-      console.log('Fetching data for day: ' + date.toISOString());
-
       date.setHours(0, 0, 0, 0);
       let startDate = new Date(date);
       startDate.setDate(date.getDate() - 1);
