@@ -7837,11 +7837,6 @@ react-native-status-bar-height@^2.5.0:
   resolved "https://registry.yarnpkg.com/react-native-status-bar-height/-/react-native-status-bar-height-2.5.0.tgz#bc0fb85230603850aab9667ee8111a62954de90c"
   integrity sha512-sYBCPYA/NapBSHkdm/IVL4ID3LLlIuLqINi2FBDyMkc2BU9pfSGOtkz9yfxoK39mYJuTrlTOQ7mManARUsYDSA==
 
-react-native-testfairy@^2.33.0:
-  version "2.36.0"
-  resolved "https://registry.yarnpkg.com/react-native-testfairy/-/react-native-testfairy-2.36.0.tgz#97928005182c093127c6cea08226204278ef9d3b"
-  integrity sha512-O4wia2JWa74lrBfkCzAVtr9RaLFKXxK9yQKO7nAlu4ElAB5bKgsUiPXk7jaL10x454b4b0pAUi2cuWxxj9XRwQ==
-
 react-native@0.63.3:
   version "0.63.3"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.63.3.tgz#4a7f6540e049ff41810887bbd1125abc4672f3bf"

@@ -138,7 +138,8 @@ class App extends React.Component {
             return {error: error, message: 'Could not create new account'};
           });
       }
-      if (idResult.data.getUser !== null) { /////////////////////////////
+      if (idResult.data.getUser !== null) {
+        /////////////////////////////
         this.userId = idResult.data.getUser.ID;
       }
 
@@ -207,7 +208,7 @@ class App extends React.Component {
             }
           }
         })();
-      });
+      })();
     })();
   }
 
@@ -215,16 +216,19 @@ class App extends React.Component {
   async uploadDataForDate(healthData) {
     API.graphql(
       graphqlOperation(createData, {
-         input: healthData ,
+        input: healthData,
       }),
     )
       .then((result) => {
-        console.log("Uploaded successfully");
+        console.log('Uploaded successfully');
         return {message: 'Successfully uploaded data for ' + healthData.date};
       })
       .catch((error) => {
-
-        if (error.errors.length > 1 && error.errors[0].errorType !== "DynamoDB:ConditionalCheckFailedException") {
+        if (
+          error.errors.length > 1 &&
+          error.errors[0].errorType !==
+            'DynamoDB:ConditionalCheckFailedException'
+        ) {
           console.error(error);
         }
 
@@ -247,13 +251,19 @@ class App extends React.Component {
               hasAccess = false;
             }
             (async () => {
-              await this.getStepCount({})
-                .then((result) => {
-                  hasAccess = true;
-                })
-                .catch((error) => {
-                  hasAccess = false;
-                });
+              for (let i = 0; i < 7; i++) {
+                let dateOptions = new Date();
+                dateOptions.setDate(dateOptions.getDate() - i);
+
+                await this.getStepCount({date: dateOptions.toISOString()}).then(
+                  (result, error) => {
+                    if (error) {
+                      return;
+                    }
+                    hasAccess = true;
+                  },
+                );
+              }
 
               if (hasAccess) {
                 resolve({access: true});
@@ -453,7 +463,7 @@ class App extends React.Component {
         sumData.distance = this.roundTo(sumData.distance / 7, 1);
         sumData.calories = this.roundTo(sumData.calories / 7, 0);
 
-        console.warn(sumData)
+        console.warn(sumData);
         resolve(sumData);
       })();
     });
